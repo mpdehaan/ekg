@@ -14,15 +14,24 @@ class Scanner
    end
 
    def run()
-      scan_lists()
+      # check mailmen to build up the lists of lists to scan
       scan_mailmen() 
+      # scan lists explicitly listed in the config file, if any
+      scan_lists()
    end
 
    def scan_lists()
-      @lists.each { |list, url|
+      @lists.each { |list, list_config|
+         (list_url, list_type) = list_config
          # url is like: https://www.redhat.com/mailman/listinfo/amd64-list
-         url.sub!(/mailman\/listinfo/, "archives")
-         scan_index(list,url)
+         if list_type == "default"
+             list_url.sub!("mailman/listinfo", "archives")
+         elsif list_type == "pipermail"
+             list_url.sub!("mailman/listinfo", "pipermail")
+         else
+             raise "unknown mailman type: #{mailman_type}"
+         end
+         scan_index(list,list_url)
       }
    end
 
@@ -30,47 +39,60 @@ class Scanner
       @mailmen.each { |mailman, mailman_config| 
          mailman_url, mailman_type = mailman_config
          puts "#{mailman} mailman: #{mailman_url}"
-         open(mailman_url) { |f| 
-            f.read().scan(/"(https?:\/\/.*\/mailman\/listinfo\/.*)"/).each { |m|
-               listname = m[0].split("/").slice(-1)
-               if mailman_type == "default"
-                   archives = m[0].sub(/mailman\/listinfo/, "archives")
-               elsif mailman_type == "pipermail"
-                   archives = m[0].sub(/mailman\/listinfo/, "pipermail")
-               else
-                   raise "unknown mailman type: #{mailman_type}"
-               end
-               scan_index(listname, archives) 
-            }
+         doc = Hpricot(URI.parse(mailman_url).read())
+         doc.search("a") { |link| 
+            new_url = link.attributes["href"]
+            if new_url.include?("mailman/listinfo")
+               listname = new_url.split("/").slice(-1)
+               #if mailman_type == "default"
+               #    archives = new_url.sub("mailman/listinfo", "archives")
+               #elsif mailman_type == "pipermail"
+               #    archives = new_url.sub("mailman/listinfo", "pipermail")
+               #else
+               #    raise "unknown mailman type: #{mailman_type}"
+               #end
+               #
+               #scan_index(listname, archives) 
+               @lists[listname] = [new_url, mailman_type]
+            end
          } 
       }
    end
 
    def scan_index(list,url)
       puts "#{list} index: #{url}"
-      # url is like: https://www.redhat.com/archives/amd64-list
-      open(url) { |f|
-         f.read().scan(/="(\w+-\w+\/thread.html)"/).each { |m|
-            scan_threads(list,"#{url}/#{m}")
-         }
-      }
+      begin
+          doc = Hpricot(URI.parse(url).read())
+      rescue OpenURI::HTTPError
+          puts "warning: could not access archives: #{url}"
+          return
+      end
+      doc.search("a") { |link|
+         new_url = link.attributes["href"]
+         if new_url.include?("thread.html")
+             puts "attributes: #{new_url}"
+             scan_threads(list,"#{url}/#{new_url}")
+         end
+      }      
+
    end
 
    def scan_threads(list,url)
-      puts "#{list} thread: #{url}"
-      # url is like: https://www.redhat.com/archives/amd64-list/2008-January/msg99999.html
+      puts "#{list} threads: #{url}"
       top = url.split("/").slice(0..-2).join("/") # FIXME
-      open(url) { |f|
-         matches = f.read().scan(/="(\w+\.html)"/).each { |m|
-            unless m[0].include?("thread.html") or m[0].include?("date.html") or m[0].include?("author.html")
-                new_url = "#{top}/#{m[0]}"
-                scan_message(list,new_url)
-            end
-         }
+      doc = Hpricot(URI.parse(url).read())
+      doc.search("a") { |link|
+         if link.attributes.has_key?("href")
+             url = link.attributes["href"]
+             unless url.grep(/index.html|thread.html|date.html|author.html/).length() > 0
+                 new_url = "#{top}/#{url}"
+                 scan_message(link.inner_html,list,new_url)
+             end
+         end
       }
    end
 
-   def scan_message(list,url)
+   def scan_message(subject,list,url)
       puts "#{list} message: #{url}"
       doc = Hpricot(URI.parse(url).read())
       from_addr = nil
@@ -120,7 +142,7 @@ class Scanner
       month, day, year = sent_date.month, sent_date.day, sent_date.year
 
       # FIXME: here's where we'd make the database insert
-      puts "message to #{list} from #{from_addr} on #{month} #{day} #{year}"
+      puts "message #{url} subject #{subject} to #{list} from #{from_addr} on #{month} #{day} #{year}"
 
    end
 
