@@ -1,16 +1,32 @@
 require 'open-uri'
 require 'date'
 require 'hpricot' # yum install ruby-hpricot
+require 'activerecord'
+
+#       insert_record(url,subject,list,from_addr,from_domain,sent_date)
+#
+class Post < ActiveRecord::Base
+   has_one  :post_url
+   has_one  :post_subject
+   has_one  :post_list
+   has_one  :post_from_addr
+   has_one  :post_from_domain
+   has_one  :post_sent_date
+end
+
 
 class Scanner
 
    def initialize(config)
-      @config = config
-      @mailmen = config.data()["mailmen"]
+      File.open(config) { |yf|
+         @data = YAML::load(yf)
+      }
+      @mailmen = @data["mailmen"]
       @lists = []
-      if config.data().has_key?("lists")
-          @lists = config.data()["lists"]
+      if @data.has_key?("lists")
+          @lists = @data["lists"]
       end
+
    end
 
    def run()
@@ -144,7 +160,21 @@ class Scanner
       # FIXME: here's where we'd make the database insert
       puts "message #{url} subject #{subject} to #{list} from #{from_addr} on #{month} #{day} #{year}"
 
+      post = Post.create(
+         :post_url => url,
+         :post_subject => subject,
+         :post_list => list,
+         :post_from_domain => from_domain,
+         :post_from_addr => from_addr,
+         :post_sent_date => sent_date
+      )
+
+      #insert_record(url,subject,list,from_addr,from_domain,sent_date)
+
    end
+
+  
+   
 
 end
 
