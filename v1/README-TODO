@@ -1,0 +1,26 @@
+EKG is the set of tools that measures the heartbeat of various
+communities.  Its goal is to measure participation along a number
+of dimensions, and to use those metrics to help assess the overall
+"community fitness" of a project.
+
+The components are:
+
+1. mlparsers.  Parses a mailing list into a sqlite db.  Very simple, with
+   the goal of creating a bunch of raw data to be mined for various
+   purposes.  Currently there's a script for RH lists and a script for
+   JBoss lists.
+
+2. grapher.  Draws a bunch of graphs based on data pulled from ml.db.
+
+3. tools.  Various crap.
+
+=====
+
+TODO:
+
+0. Kill the current db and replace it with the old one.
+1. Build a mysql DB and refactor scripts to use it instead
+2. Pull in a bunch more listdata.  Great candidates:
+  * https://www.redhat.com/archives/libvir-list/
+  * The hibernate devel list (again)
+
