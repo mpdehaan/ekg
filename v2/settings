@@ -10,6 +10,7 @@ explicit_lists:
     cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
     csi-devel: [ 'https://fedorahosted.org/mailman/listinfo/csi-devel', 'pipermail', '' ]
     epel-devel-list: [ 'https://www.redhat.com/mailman/listinfo/epel-devel-list', '' ]
+    et-mgmt-tools: [ 'https://www.redhat.com/mailman/listinfo/et-mgmt-tools', '' ]
     fedora-devel-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-devel-list', '' ]
     fedora-infrastructure-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-infrastructure-list', '' ]
     fedora-olpc-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-olpc-list' , '' ]
@@ -30,7 +31,7 @@ explicit_lists:
     thincrust-devel: [ 'https://www.redhat.com/mailman/listinfo/thincrust-devel', '']
     rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
 limit_months:
-    1
+    3
 scan_mailmen:
     0
 track_limit: 0.01

@@ -18,9 +18,11 @@ class Grapher
 
    def run()
       lists = Post.connection.select_values("select DISTINCT(list_id) from posts")
+      File.open("graphs.html","w+") do |f|
+      prefix = File.open("prefix").read()
+      postfix = File.open("postfix").read()
+      f.write(prefix)
       lists.each do |list|
-            prefix = File.open("prefix").read()
-            postfix = File.open("postfix").read()
             buckets = {}
             buckets["other"] = 0
             posts = Post.connection.select_values("select COUNT(*) from posts where list_id = '#{list}'")[0].to_f()
@@ -36,20 +38,43 @@ class Grapher
                     buckets["other"] = buckets["other"] + count
                 end
             end
-            File.open("graph_#{list}.html","w+") do |f|
-                f.write(prefix)
-                ctr = 0 
-                size = buckets.keys().length()
-                buckets.each do |key,value|
-                    ctr = ctr + 1
-                    #unless ctr == size:
-                    f.write("{ label: \"#{key}\", data: #{value} },")
-                    #else
-                    #    f.write("{ label: \"#{key}\", data: #{value} }")
-                    #end
+            ctr = 0 
+            f.write("\n")
+            size = buckets.keys().length()
+            #f.write("<div id='#{list}' style='overflow: auto; position:relative;height:350px;width:380px;'/>\n")
+
+            # *** FIRST TABLE ROW (LIST NAME)
+            f.write("<TR><TD>#{list}</TD>\n")
+
+            # *** SECOND TABLE ROW (PIE GRAPH) 
+            f.write("<TD><div id='#{list}' style='position:relative;height:350px;width:380px;'/>\n")
+
+            f.write("<script type='text/javascript'>\n")
+            f.write("var p = new pie();")
+            buckets.each do |key,value|
+                unless key == "other" and value == 0
+                    f.write("p.add('#{key}','#{value}');\n")
                 end
-                f.write(postfix)
-            end    
+            end
+            f.write("p.render('#{list}','#{list}');\n")
+            f.write("</script>\n<br/>\n</TD>\n")
+
+            # *** THIRD TABLE ROW (LIST STATS)
+            f.write("<TD>")
+            f.write("<TABLE>")
+            total = 0           
+            buckets.each do |key,value|
+                unless key == "other" and value == 0
+                    f.write("<TR><TD>#{key}</TD><TD>#{value.to_i}</TD></TR>\n")
+                    total = total + value
+                end
+            end
+            f.write("<TR><TD>total</TD><TD>#{total.to_i}</TD></TR>\n")
+            f.write("</TABLE>")
+            f.write("</TD>")
+
+       end
+       f.write(postfix)
        end
    end
 
