@@ -7,10 +7,10 @@ explicit_lists:
     amqp-dev-list: [ 'https://www.redhat.com/mailman/listinfo/amqp-dev-list', '' ]
     anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
     augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
-    cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail' ]
-    csi-devel: [ 'https://fedorahosted.org/mailman/listinfo/csi-devel', 'pipermail' ]
-    epel-devel-list: [ 'https://www.redhat.com/mailman/listinfo/epel-devel-list' ]
-    fedora-devel-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-devel-list' ]
+    cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
+    csi-devel: [ 'https://fedorahosted.org/mailman/listinfo/csi-devel', 'pipermail', '' ]
+    epel-devel-list: [ 'https://www.redhat.com/mailman/listinfo/epel-devel-list', '' ]
+    fedora-devel-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-devel-list', '' ]
     fedora-infrastructure-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-infrastructure-list', '' ]
     fedora-olpc-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-olpc-list' , '' ]
     fedora-xen: [ 'https://www.redhat.com/mailman/listinfo/fedora-xen', '' ]
@@ -18,7 +18,6 @@ explicit_lists:
     freeipa-devel: [ 'https://www.redhat.com/mailman/listinfo/freeipa-devel', '' ]
     freeipa-interest: [ 'https://www.redhat.com/mailman/listinfo/freeipa-interest', '' ]
     freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
-    ipa-feedback: [ 'https://www.redhat.com/mailman/listinfo/ipa-feedback', '']
     libvir-list: [ 'https://www.redhat.com/mailman/listinfo/libvir-list', '' ]
     genome-list: [ 'https://www.redhat.com/mailman/listinfo/genome-list', '' ]
     olpc-software: [ 'https://www.redhat.com/mailman/listinfo/olpc-software', '' ]
@@ -29,9 +28,11 @@ explicit_lists:
     suds: [ 'https://fedorahosted.org/mailman/listinfo/suds', 'pipermail' ]
     stateless-list: [ 'http://www.redhat.com/mailman/listinfo/stateless-list' , '' ]
     thincrust-devel: [ 'https://www.redhat.com/mailman/listinfo/thincrust-devel', '']
-    rhn-satellite-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-satellite-users', '' ]
     rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
 limit_months:
     3
+force_rescan_current_month:
+    0
 scan_mailmen:
     0
+track_domains: [ 'redhat.com', 'gmail.com', 'fedoraproject.org' ]

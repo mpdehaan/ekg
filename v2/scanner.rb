@@ -21,6 +21,7 @@ class Scanner
       @year_month = "#{@year}-#{@month}"
       @limit_months = @data["limit_months"]
       @scan_mailmen = @data["scan_mailmen"]
+      @rescan_current = @data["force_rescan_current_month"]
    end
 
    def mark_completed(url)
@@ -31,7 +32,7 @@ class Scanner
    def is_completed(url)
       # determine if we need to index a page, which takes bandwidth
       if url.include?("thread.html") and url.include?(@year_month)
-         return false
+         return false if @rescan_current == 1
       end
       results = Scan.find_all_by_url(url)
       return results.length() != 0
@@ -64,6 +65,8 @@ class Scanner
    def scan_lists()
       # for each list we know we need to index, find the archives URL
       # and then request scanning of the archives
+      count = 1
+      lists_size = @lists.length()
       @lists.each { |list, list_config|
          (list_url, list_type) = list_config
          # url is like: https://www.redhat.com/mailman/listinfo/amd64-list
@@ -72,9 +75,11 @@ class Scanner
          elsif list_type == "pipermail"
              list_url.sub!("mailman/listinfo", "pipermail")
          else
-             raise "unknown mailman type: #{mailman_type}"
+             raise "unknown mailman type: #{list_type}"
          end
+         puts "list #{count}/#{lists_size}"
          scan_archives(list,list_url)
+         count = count + 1
       }
    end
 
@@ -120,7 +125,7 @@ class Scanner
       doc.search("a") { |link|
          if link.attributes.has_key?("href")
              new_url = link.attributes["href"]
-             unless new_url.grep(/txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
+             unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
                  new_url = "#{top}/#{new_url}"
                  scan_message(link.inner_html,list,new_url)
              end
