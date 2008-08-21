@@ -21,21 +21,6 @@ class Scanner
       @year_month = "#{@year}-#{@month}"
       @limit_months = @data["limit_months"]
       @scan_mailmen = @data["scan_mailmen"]
-      @rescan_current = @data["force_rescan_current_month"]
-   end
-
-   def mark_completed(url)
-      # mark the page as being scanned so we don't have to index it again
-      Scan.create(:url => url)
-   end
-
-   def is_completed(url)
-      # determine if we need to index a page, which takes bandwidth
-      if url.include?("thread.html") and url.include?(@year_month)
-         return false if @rescan_current == 1
-      end
-      results = Scan.find_all_by_url(url)
-      return results.length() != 0
    end
 
    def run()
@@ -65,7 +50,7 @@ class Scanner
    def scan_lists()
       # for each list we know we need to index, find the archives URL
       # and then request scanning of the archives
-      count = 1
+      list_count = 1
       lists_size = @lists.length()
       @lists.each { |list, list_config|
          (list_url, list_type) = list_config
@@ -77,15 +62,15 @@ class Scanner
          else
              raise "unknown mailman type: #{list_type}"
          end
-         puts "list #{count}/#{lists_size}"
-         scan_archives(list,list_url)
-         count = count + 1
+         puts "list #{list_count}/#{lists_size}"
+         scan_archives(list,list_url,list_count,lists_size)
+         list_count = list_count + 1
       }
    end
 
-   def scan_archives(list,url)
+   def scan_archives(list,url,list_count,lists_size)
       # read a mailing archives page to find the threads listed on that page
-      counter = @limit_months
+      mon_count = 1
       puts "#{list} threads: #{url}"
       begin
           doc = Hpricot(URI.parse(url).read())
@@ -96,25 +81,20 @@ class Scanner
       doc.search("a") { |link|
          new_url = link.attributes["href"]
          if new_url.include?("thread.html")
-             scan_threads(list,"#{url}/#{new_url}")
-             counter = counter - 1
+             scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count)
+             mon_count = mon_count +1
          end
-         if counter <= 0:
+         if mon_count > @limit_months:
              return
          end
       }      
 
    end
 
-   def scan_threads(list,url)
+   def scan_threads(list,url,list_count,lists_size,mon_count)
       # read a given month's archives page to find the messages within
-      if is_completed(url):
-          puts "#{list} already scanned!"
-          return
-      else
-          puts "#{list} scanning threads: #{url}"
-      end
 
+      count = 0
       top = url.split("/").slice(0..-2).join("/") # FIXME
       begin
           doc = Hpricot(URI.parse(url).read())
@@ -127,14 +107,16 @@ class Scanner
              new_url = link.attributes["href"]
              unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
                  new_url = "#{top}/#{new_url}"
-                 scan_message(link.inner_html,list,new_url)
+                 count = count + 1 
+                 scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
              end
          end
       }
-      mark_completed(url)
    end
 
-   def scan_message(subject,list,msg_url)
+   def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count)
+
+      puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
 
       begin
           doc = Hpricot(URI.parse(msg_url).read())
@@ -150,7 +132,7 @@ class Scanner
           # at least for fedorahosted
           # if the href contains listinfo and the contents of the href contain "at" 
           # then the inner_html is the from address
-          if link.attributes["href"] =~ /listinfo/
+          if link.attributes["href"] =~ /listinfo|mailto/
              tokens = link.inner_html.split()
              if tokens.length == 3 and tokens[1] == "at" and tokens[2] =~ /\./
                 from_addr = "#{tokens[0]}@#{tokens[2]}"
@@ -189,8 +171,7 @@ class Scanner
       sent_date = Date.parse(sent_date)
       month, day, year = sent_date.month, sent_date.day, sent_date.year
 
-      insert_record(msg_url,subject,list,from_addr,from_domain,sent_date)
-      mark_completed(msg_url)
+      insert_record(msg_url,subject,list,from_domain,from_addr,sent_date)
 
    end
 

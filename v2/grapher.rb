@@ -17,5 +17,15 @@ class Grapher
    end
 
    def run()
-      puts "grapher not implemented yet"
+      lists = Post.connection.select_values("select DISTINCT(list_id) from posts")
+      lists.each do |list|
+            domains = Post.connection.select_values("select DISTINCT(from_domain) from posts where list_id='#{list}'")
+            domains.each do |domain|
+               count = Post.connection.select_values("select count(*) from posts where list_id='#{list}' and from_domain='#{domain}'")
+               puts "#{list} #{domain} #{count}"
+            end
+      end
+   
    end
+
+end

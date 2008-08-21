@@ -21,16 +21,16 @@ opts = GetoptLong.new(
 
 opts.each { |opt, arg|
    case opt
-   when "config"
+   when "--config"
       config_file = arg
-   when "scan"
+   when "--scan"
       is_scanning = true
-   when "graph"
+   when "--graph"
       is_graphing = true
    end
 }
 
-if not is_scanning and not is_graphing
+if not (is_scanning or is_graphing)
    puts "nothing to do"
    exit(1)
 end
