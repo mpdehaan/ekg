@@ -1,9 +1,37 @@
 ---
 all_your_base_owner: us
 mailmen:
-    redhat: [ 'http://www.redhat.com/mailman/listinfo', 'default' ]
+    redhat: [ 'http://www.redhat.com/mailman/listinfo', '' ]
     fedorahosted: [ 'https://fedorahosted.org/mailman/listinfo', 'pipermail' ]
-#mailmen:
-#    fedorahosted: [ 'https://fedorahosted.org/mailman/listinfo', 'pipermail' ]
-lists: 
-    amd64-list: [ 'https://www.redhat.com/mailman/listinfo/amd64-list', 'default' ]
+explicit_lists: 
+    amqp-dev-list: [ 'https://www.redhat.com/mailman/listinfo/amqp-dev-list', '' ]
+    anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
+    augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
+    cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail' ]
+    csi-devel: [ 'https://fedorahosted.org/mailman/listinfo/csi-devel', 'pipermail' ]
+    epel-devel-list: [ 'https://www.redhat.com/mailman/listinfo/epel-devel-list' ]
+    fedora-devel-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-devel-list' ]
+    fedora-infrastructure-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-infrastructure-list', '' ]
+    fedora-olpc-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-olpc-list' , '' ]
+    fedora-xen: [ 'https://www.redhat.com/mailman/listinfo/fedora-xen', '' ]
+    func-list: [ 'https://www.redhat.com/mailman/listinfo/func-list', '' ]
+    freeipa-devel: [ 'https://www.redhat.com/mailman/listinfo/freeipa-devel', '' ]
+    freeipa-interest: [ 'https://www.redhat.com/mailman/listinfo/freeipa-interest', '' ]
+    freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
+    ipa-feedback: [ 'https://www.redhat.com/mailman/listinfo/ipa-feedback', '']
+    libvir-list: [ 'https://www.redhat.com/mailman/listinfo/libvir-list', '' ]
+    genome-list: [ 'https://www.redhat.com/mailman/listinfo/genome-list', '' ]
+    olpc-software: [ 'https://www.redhat.com/mailman/listinfo/olpc-software', '' ]
+    ovirt-devel: [ 'https://www.redhat.com/mailman/listinfo/ovirt-devel', '' ]
+    smolt-devel: [ 'https://fedorahosted.org/mailman/listinfo/smolt-devel', 'pipermail' ]
+    spacewalk-devel: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-devel', '']
+    spacewalk-list: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-list', '' ]
+    suds: [ 'https://fedorahosted.org/mailman/listinfo/suds', 'pipermail' ]
+    stateless-list: [ 'http://www.redhat.com/mailman/listinfo/stateless-list' , '' ]
+    thincrust-devel: [ 'https://www.redhat.com/mailman/listinfo/thincrust-devel', '']
+    rhn-satellite-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-satellite-users', '' ]
+    rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
+limit_months:
+    3
+scan_mailmen:
+    0

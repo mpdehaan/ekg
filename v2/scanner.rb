@@ -1,57 +1,52 @@
+require 'db'
+
 require 'open-uri'
 require 'date'
-require 'hpricot' # yum install ruby-hpricot
+require 'hpricot' 
 require 'activerecord'
-
-#       insert_record(url,subject,list,from_addr,from_domain,sent_date)
-#
-class Post < ActiveRecord::Base
-   has_one  :post_url
-   has_one  :post_subject
-   has_one  :post_list
-   has_one  :post_from_addr
-   has_one  :post_from_domain
-   has_one  :post_sent_date
-end
-
 
 class Scanner
 
    def initialize(config)
+      # get the list of mailmen indexes and individual lists to scan
+      # from the config file
       File.open(config) { |yf|
          @data = YAML::load(yf)
       }
       @mailmen = @data["mailmen"]
-      @lists = []
-      if @data.has_key?("lists")
-          @lists = @data["lists"]
-      end
+      @lists = @data["explicit_lists"]
+      @start_time = DateTime.now()
+      @month = @start_time.strftime("%B")
+      @year = @start_time.year
+      @year_month = "#{@year}-#{@month}"
+      @limit_months = @data["limit_months"]
+      @scan_mailmen = @data["scan_mailmen"]
+   end
 
+   def mark_completed(url)
+      # mark the page as being scanned so we don't have to index it again
+      Scan.create(:url => url)
+   end
+
+   def is_completed(url)
+      # determine if we need to index a page, which takes bandwidth
+      if url.include?("thread.html") and url.include?(@year_month)
+         return false
+      end
+      results = Scan.find_all_by_url(url)
+      return results.length() != 0
    end
 
    def run()
+      # main entry point
       # check mailmen to build up the lists of lists to scan
-      scan_mailmen() 
-      # scan lists explicitly listed in the config file, if any
+      # the scan lists explicitly listed in the config file, if any
+      scan_mailmen() if @scan_mailmen ==1
       scan_lists()
    end
-
-   def scan_lists()
-      @lists.each { |list, list_config|
-         (list_url, list_type) = list_config
-         # url is like: https://www.redhat.com/mailman/listinfo/amd64-list
-         if list_type == "default"
-             list_url.sub!("mailman/listinfo", "archives")
-         elsif list_type == "pipermail"
-             list_url.sub!("mailman/listinfo", "pipermail")
-         else
-             raise "unknown mailman type: #{mailman_type}"
-         end
-         scan_index(list,list_url)
-      }
-   end
-
+   
    def scan_mailmen()
+      # find all the listinfo pages by reading the mailman page 
       @mailmen.each { |mailman, mailman_config| 
          mailman_url, mailman_type = mailman_config
          puts "#{mailman} mailman: #{mailman_url}"
@@ -60,23 +55,33 @@ class Scanner
             new_url = link.attributes["href"]
             if new_url.include?("mailman/listinfo")
                listname = new_url.split("/").slice(-1)
-               #if mailman_type == "default"
-               #    archives = new_url.sub("mailman/listinfo", "archives")
-               #elsif mailman_type == "pipermail"
-               #    archives = new_url.sub("mailman/listinfo", "pipermail")
-               #else
-               #    raise "unknown mailman type: #{mailman_type}"
-               #end
-               #
-               #scan_index(listname, archives) 
                @lists[listname] = [new_url, mailman_type]
             end
          } 
       }
    end
 
-   def scan_index(list,url)
-      puts "#{list} index: #{url}"
+   def scan_lists()
+      # for each list we know we need to index, find the archives URL
+      # and then request scanning of the archives
+      @lists.each { |list, list_config|
+         (list_url, list_type) = list_config
+         # url is like: https://www.redhat.com/mailman/listinfo/amd64-list
+         if list_type == "default" or list_type == ""
+             list_url.sub!("mailman/listinfo", "archives")
+         elsif list_type == "pipermail"
+             list_url.sub!("mailman/listinfo", "pipermail")
+         else
+             raise "unknown mailman type: #{mailman_type}"
+         end
+         scan_archives(list,list_url)
+      }
+   end
+
+   def scan_archives(list,url)
+      # read a mailing archives page to find the threads listed on that page
+      counter = @limit_months
+      puts "#{list} threads: #{url}"
       begin
           doc = Hpricot(URI.parse(url).read())
       rescue OpenURI::HTTPError
@@ -86,31 +91,53 @@ class Scanner
       doc.search("a") { |link|
          new_url = link.attributes["href"]
          if new_url.include?("thread.html")
-             puts "attributes: #{new_url}"
              scan_threads(list,"#{url}/#{new_url}")
+             counter = counter - 1
+         end
+         if counter <= 0:
+             return
          end
       }      
 
    end
 
    def scan_threads(list,url)
-      puts "#{list} threads: #{url}"
+      # read a given month's archives page to find the messages within
+      if is_completed(url):
+          puts "#{list} already scanned!"
+          return
+      else
+          puts "#{list} scanning threads: #{url}"
+      end
+
       top = url.split("/").slice(0..-2).join("/") # FIXME
-      doc = Hpricot(URI.parse(url).read())
+      begin
+          doc = Hpricot(URI.parse(url).read())
+      rescue OpenURI::HTTPError
+          puts "warning: could not access threads: #{url}"
+          return
+      end
       doc.search("a") { |link|
          if link.attributes.has_key?("href")
-             url = link.attributes["href"]
-             unless url.grep(/index.html|thread.html|date.html|author.html/).length() > 0
-                 new_url = "#{top}/#{url}"
+             new_url = link.attributes["href"]
+             unless new_url.grep(/txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
+                 new_url = "#{top}/#{new_url}"
                  scan_message(link.inner_html,list,new_url)
              end
          end
       }
+      mark_completed(url)
    end
 
-   def scan_message(subject,list,url)
-      puts "#{list} message: #{url}"
-      doc = Hpricot(URI.parse(url).read())
+   def scan_message(subject,list,msg_url)
+
+      begin
+          doc = Hpricot(URI.parse(msg_url).read())
+      rescue OpenURI::HTTPError
+          puts "warning: could not access message: #{msg_url}"
+          return
+      end
+
       from_addr = nil
       from_domain = nil
       sent_date = nil
@@ -157,20 +184,20 @@ class Scanner
       sent_date = Date.parse(sent_date)
       month, day, year = sent_date.month, sent_date.day, sent_date.year
 
-      # FIXME: here's where we'd make the database insert
-      puts "message #{url} subject #{subject} to #{list} from #{from_addr} on #{month} #{day} #{year}"
+      insert_record(msg_url,subject,list,from_addr,from_domain,sent_date)
+      mark_completed(msg_url)
 
+   end
+
+   def insert_record(url,subject,list,from_domain,from_addr,sent_date)
       post = Post.create(
-         :post_url => url,
-         :post_subject => subject,
-         :post_list => list,
-         :post_from_domain => from_domain,
-         :post_from_addr => from_addr,
-         :post_sent_date => sent_date
+         :url => url,
+         :subject => subject,
+         :list_id => list,
+         :from_domain => from_domain,
+         :from_addr => from_addr,
+         :sent_date => sent_date
       )
-
-      #insert_record(url,subject,list,from_addr,from_domain,sent_date)
-
    end
 
   
