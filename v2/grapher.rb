@@ -22,7 +22,7 @@ class Grapher
       prefix = File.open("prefix").read()
       postfix = File.open("postfix").read()
       f.write(prefix)
-      lists.each do |list|
+      lists.sort().each do |list|
             buckets = {}
             buckets["other"] = 0
             posts = Post.connection.select_values("select COUNT(*) from posts where list_id = '#{list}'")[0].to_f()
@@ -51,7 +51,7 @@ class Grapher
 
             f.write("<script type='text/javascript'>\n")
             f.write("var p = new pie();")
-            buckets.each do |key,value|
+            buckets.sort{|a,b| a[1]<=>b[1]}.each do |key,value|
                 unless key == "other" and value == 0
                     f.write("p.add('#{key}','#{value}');\n")
                 end
@@ -63,7 +63,7 @@ class Grapher
             f.write("<TD>")
             f.write("<TABLE>")
             total = 0           
-            buckets.each do |key,value|
+            buckets.sort{|a,b| a[1]<=>b[1]}.each do |key,value|
                 unless key == "other" and value == 0
                     f.write("<TR><TD>#{key}</TD><TD>#{value.to_i}</TD></TR>\n")
                     total = total + value

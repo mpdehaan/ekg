@@ -117,6 +117,12 @@ class Scanner
    def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count)
 
       puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
+      
+      hit = Post.connection.select_values("select count(*) from posts where url = '#{msg_url}'")[0]
+      if hit != 0
+         puts "!"
+         return 
+      end
 
       begin
           doc = Hpricot(URI.parse(msg_url).read())
@@ -176,6 +182,7 @@ class Scanner
    end
 
    def insert_record(url,subject,list,from_domain,from_addr,sent_date)
+
       post = Post.create(
          :url => url,
          :subject => subject,
