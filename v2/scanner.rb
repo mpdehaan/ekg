@@ -119,7 +119,7 @@ class Scanner
       puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
       
       hit = Post.connection.select_values("select count(*) from posts where url = '#{msg_url}'")[0]
-      if hit != 0
+      if hit.to_i() != 0
          puts "!"
          return 
       end

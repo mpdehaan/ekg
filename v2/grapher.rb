@@ -47,11 +47,11 @@ class Grapher
             f.write("<TR><TD>#{list}</TD>\n")
 
             # *** SECOND TABLE ROW (PIE GRAPH) 
-            f.write("<TD><div id='#{list}' style='position:relative;height:350px;width:380px;'/>\n")
+            f.write("<TD WIDTH=445><div id='#{list}' style='position:relative;height:350px;width:380px;'/>\n")
 
             f.write("<script type='text/javascript'>\n")
             f.write("var p = new pie();")
-            buckets.sort{|a,b| a[1]<=>b[1]}.each do |key,value|
+            buckets.sort{|a,b| b[1]<=>a[1]}.each do |key,value|
                 unless key == "other" and value == 0
                     f.write("p.add('#{key}','#{value}');\n")
                 end
@@ -63,7 +63,7 @@ class Grapher
             f.write("<TD>")
             f.write("<TABLE>")
             total = 0           
-            buckets.sort{|a,b| a[1]<=>b[1]}.each do |key,value|
+            buckets.sort{|a,b| b[1]<=>a[1]}.each do |key,value|
                 unless key == "other" and value == 0
                     f.write("<TR><TD>#{key}</TD><TD>#{value.to_i}</TD></TR>\n")
                     total = total + value
