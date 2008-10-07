@@ -14,6 +14,7 @@ class Grapher
          @data = YAML::load(yf)
       }
       @track_limit = @data["track_limit"]
+      @listdata = @data["explicit_lists"]
    end
 
    def run()
@@ -23,6 +24,16 @@ class Grapher
       postfix = File.open("postfix").read()
       f.write(prefix)
       lists.sort().each do |list|
+
+            # post the URL to the list, FIXME, this breaks auto-page scanning
+            # but I really don't care at this point
+            begin
+                listurl = @data['explicit_lists'][list][0]
+            rescue
+                # list not in settings, skip it
+                next
+            end
+
             buckets = {}
             buckets["other"] = 0
             posts = Post.connection.select_values("select COUNT(*) from posts where list_id = '#{list}'")[0].to_f()
@@ -44,7 +55,12 @@ class Grapher
             #f.write("<div id='#{list}' style='overflow: auto; position:relative;height:350px;width:380px;'/>\n")
 
             # *** FIRST TABLE ROW (LIST NAME)
-            f.write("<TR><TD>#{list}</TD>\n")
+            lpostfix = ""
+            lpostfix = " <font size='-1'>(FH)</font>" if @listdata[list][0] =~ /fedorahosted/
+            lpostfix = " <font size='-1'>(J)</font>" if @listdata[list][0] =~ /jboss/
+            lpostfix = " <font size='-1'>(R)</font>" if @listdata[list][0] =~ /redhat.com/
+
+            f.write("<TR><TD><A HREF=\"#{listurl}\">#{list}#{lpostfix}</A></TD>\n")
 
             # *** SECOND TABLE ROW (PIE GRAPH) 
             f.write("<TD WIDTH=445><div id='#{list}' style='position:relative;height:350px;width:380px;'/>\n")

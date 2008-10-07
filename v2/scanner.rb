@@ -13,6 +13,8 @@ class Scanner
       File.open(config) { |yf|
          @data = YAML::load(yf)
       }
+      # FIXME the mailmen scanning feature is probably not working now
+      # because we have code references to explicit_lists.  This is ok.
       @mailmen = @data["mailmen"]
       @lists = @data["explicit_lists"]
       @start_time = DateTime.now()
@@ -57,7 +59,7 @@ class Scanner
          # url is like: https://www.redhat.com/mailman/listinfo/amd64-list
          if list_type == "default" or list_type == ""
              list_url.sub!("mailman/listinfo", "archives")
-         elsif list_type == "pipermail"
+         elsif list_type == "pipermail" or list_type == "jboss"
              list_url.sub!("mailman/listinfo", "pipermail")
          else
              raise "unknown mailman type: #{list_type}"
@@ -134,19 +136,46 @@ class Scanner
       from_addr = nil
       from_domain = nil
       sent_date = nil
-      doc.search("a") { |link| 
-          # at least for fedorahosted
-          # if the href contains listinfo and the contents of the href contain "at" 
-          # then the inner_html is the from address
-          if link.attributes["href"] =~ /listinfo|mailto/
+
+
+      # hack: some jboss lists show the email as do-not-reply@jboss.com
+      # so we can only tell if someone there does /not/ have their mail
+      # filtered out, so we get "less good" stats
+      #
+
+      if @lists[list][1] == "jboss" 
+         doc.search("b") { |link|
              tokens = link.inner_html.split()
              if tokens.length == 3 and tokens[1] == "at" and tokens[2] =~ /\./
-                from_addr = "#{tokens[0]}@#{tokens[2]}"
-                from_domain = tokens[2]
-                break
+                 from_addr = "#{tokens[0]}@#{tokens[2]}"
+                 from_domain = tokens[2]
+                 break
              end
-          end
-      }
+         }
+      end
+
+      if from_domain.nil?
+          doc.search("a") { |link| 
+              # at least for fedorahosted
+              # if the href contains listinfo and the contents of the href contain "at" 
+              # then the inner_html is the from address
+              if link.attributes["href"] =~ /listinfo|mailto/
+                  tokens = link.inner_html.split()
+                  if tokens.length == 3 and tokens[1] == "at" and tokens[2] =~ /\./
+                      if link.inner_html =~ /do-not-reply/
+                          from_addr = "other@do-not-reply"
+                          from_domain = "do-not-reply"
+                          break
+                      else
+                          from_addr = "#{tokens[0]}@#{tokens[2]}"
+                          from_domain = tokens[2]
+                          break
+                      end
+                  end
+              end
+          }
+      end
+
       doc.search("i") { |italics|
           # fedora hosted UTC date is in italics towards the top of the message
           if italics.inner_html =~ / UTC /
@@ -173,11 +202,34 @@ class Scanner
               end
           }
       end   
+      if sent_date.nil?
+          doc.search("i") { |it|
+              # jboss lists have other date data, fun!
+              if it.inner_html =~ /(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/
+                  sent_date = it.inner_html
+              end
+          }
+      end
+      if sent_date.nil?
+          puts "totally failed to figure out the date"
+      end
 
-      sent_date = Date.parse(sent_date)
-      month, day, year = sent_date.month, sent_date.day, sent_date.year
+      ok = 1
+      begin
+          sent_date = Date.parse(sent_date)
+          month, day, year = sent_date.month, sent_date.day, sent_date.year
+      rescue
+          ok = 0
+          puts "date fail! #{sent_date}"
+      end
 
-      insert_record(msg_url,subject,list,from_domain,from_addr,sent_date)
+      if (ok == 1)
+          begin
+              insert_record(msg_url,subject,list,from_domain,from_addr,sent_date)
+          rescue
+              puts "insert fail: url=(#{msg_url}) subject=(#{subject}) list=(#{list}) domain=(#{from_domain}) from_addr=(#{from_addr}) sent_date=(#{sent_date})"
+          end
+      end
 
    end
 

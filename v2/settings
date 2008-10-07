@@ -4,7 +4,6 @@ mailmen:
     redhat: [ 'http://www.redhat.com/mailman/listinfo', '' ]
     fedorahosted: [ 'https://fedorahosted.org/mailman/listinfo', 'pipermail' ]
 explicit_lists: 
-    amqp-dev-list: [ 'https://www.redhat.com/mailman/listinfo/amqp-dev-list', '' ]
     anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
     augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
     cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
@@ -21,6 +20,7 @@ explicit_lists:
     freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
     libvir-list: [ 'https://www.redhat.com/mailman/listinfo/libvir-list', '' ]
     genome-list: [ 'https://www.redhat.com/mailman/listinfo/genome-list', '' ]
+    fedora-trans-list: [ 'http://www.redhat.com/mailman/listinfo/fedora-trans-list', '' ]
     olpc-software: [ 'https://www.redhat.com/mailman/listinfo/olpc-software', '' ]
     ovirt-devel: [ 'https://www.redhat.com/mailman/listinfo/ovirt-devel', '' ]
     smolt-devel: [ 'https://fedorahosted.org/mailman/listinfo/smolt-devel', 'pipermail' ]
@@ -30,8 +30,33 @@ explicit_lists:
     stateless-list: [ 'http://www.redhat.com/mailman/listinfo/stateless-list' , '' ]
     thincrust-devel: [ 'https://www.redhat.com/mailman/listinfo/thincrust-devel', '']
     rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
+    webbeans-users: [ 'https://lists.jboss.org/mailman/listinfo/webbeans-users', 'jboss' ]
+    webbeans-users: [ 'https://lists.jboss.org/mailman/listinfo/webbeans-dev', 'jboss' ]
+    seam-dev: [ 'https://lists.jboss.org/mailman/listinfo/seam-dev', 'jboss' ]
+    rules-users: [ 'https://lists.jboss.org/mailman/listinfo/rules-users', 'jboss' ]
+    rules-dev: [ 'https://lists.jboss.org/mailman/listinfo/rules-dev', 'jboss' ]
+    rhmessaging-dev : ['https://lists.jboss.org/mailman/listinfo/rhmessaging-dev', 'jboss' ]
+    netty-users: [ 'https://lists.jboss.org/mailman/listinfo/netty-users', 'jboss' ]
+    netty-dev: [ 'https://lists.jboss.org/mailman/listinfo/netty-dev', 'jboss' ]
+    jbpm-users: [ 'https://lists.jboss.org/mailman/listinfo/jbpm-users', 'jboss' ]
+    jbpm-dev: [ 'https://lists.jboss.org/mailman/listinfo/jbpm-dev', 'jboss' ]
+    jbossws-dev: [ 'https://lists.jboss.org/mailman/listinfo/jbossws-dev', 'jboss' ]
+    jbosssts-dev: [ 'https://lists.jboss.org/mailman/listinfo/jbossts-dev', 'jboss' ]
+    jbossws-uses: [ 'https://lists.jboss.org/mailman/listinfo/jbossws-users', 'jboss' ]
+    jbosssts-users: [ 'https://lists.jboss.org/mailman/listinfo/jbossts-users', 'jboss' ]
+    jbosscache-dev: [ 'https://lists.jboss.org/mailman/listinfo/jbosscache-dev', 'jboss' ]
+    jbosscache-users: [ 'https://lists.jboss.org/mailman/listinfo/jbosscache-users', 'jboss' ]
+    jboss-user: [ 'https://lists.jboss.org/mailman/listinfo/jboss-user', 'jboss' ]
+    jboss-development: ['https://lists.jboss.org/mailman/listinfo/jboss-development', 'jboss' ]
+    jboss-cluster-dev: ['https://lists.jboss.org/mailman/listinfo/jboss-cluster-dev', 'jboss' ]
+    hibernate-users: ['https://lists.jboss.org/mailman/listinfo/hibernate-users', 'jboss' ]
+    hibernate-dev: ['https://lists.jboss.org/mailman/listinfo/hibernate-dev', 'jboss' ]
+    esb-users: ['https://lists.jboss.org/mailman/listinfo/esb-users', 'jboss' ]
+    esb-dev: ['https://lists.jboss.org/mailman/listinfo/esb-dev', 'jboss' ]
+    dtf-users: ['https://lists.jboss.org/mailman/listinfo/dtf-users', 'jboss' ]
+    dna-users: ['https://lists.jboss.org/mailman/listinfo/dna-users', 'jboss' ]
 limit_months:
-    3
+    4
 scan_mailmen:
     0
 track_limit: 0.01
