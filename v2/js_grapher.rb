@@ -4,7 +4,6 @@ require 'open-uri'
 require 'date'
 require 'hpricot' 
 require 'activerecord'
-require 'gchart/lib/gchart.rb'
 
 class Grapher
 
@@ -66,24 +65,15 @@ class Grapher
             # *** SECOND TABLE ROW (PIE GRAPH) 
             f.write("<TD WIDTH=445><div id='#{list}' style='position:relative;height:350px;width:380px;'/>\n")
 
-            #f.write("<script type='text/javascript'>\n")
-            #f.write("var p = new pie();")
-
-            labels = []
-            values = []
-
+            f.write("<script type='text/javascript'>\n")
+            f.write("var p = new pie();")
             buckets.sort{|a,b| b[1]<=>a[1]}.each do |key,value|
                 unless key == "other" and value == 0
-                    labels << key
-                    values << value
+                    f.write("p.add('#{key}','#{value}');\n")
                 end
             end
-
-            chart = Gchart.pie(:data => values, :title => '', :size => '400x200', :labels => labels)
-            f.write("<IMG SRC='#{chart}'/>")
-
-            #f.write("p.render('#{list}','#{list}');\n")
-            #f.write("</script>\n<br/>\n</TD>\n")
+            f.write("p.render('#{list}','#{list}');\n")
+            f.write("</script>\n<br/>\n</TD>\n")
 
             # *** THIRD TABLE ROW (LIST STATS)
             f.write("<TD>")
