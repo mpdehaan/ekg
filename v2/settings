@@ -1,8 +1,6 @@
 ---
 all_your_base_owner: us
-mailmen:
-    redhat: [ 'http://www.redhat.com/mailman/listinfo', '' ]
-    fedorahosted: [ 'https://fedorahosted.org/mailman/listinfo', 'pipermail' ]
+mailmen: []
 explicit_lists: 
     anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
     augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
@@ -21,9 +19,7 @@ explicit_lists:
     libvir-list: [ 'https://www.redhat.com/mailman/listinfo/libvir-list', '' ]
     genome-list: [ 'https://www.redhat.com/mailman/listinfo/genome-list', '' ]
     fedora-trans-list: [ 'http://www.redhat.com/mailman/listinfo/fedora-trans-list', '' ]
-    olpc-software: [ 'https://www.redhat.com/mailman/listinfo/olpc-software', '' ]
     ovirt-devel: [ 'https://www.redhat.com/mailman/listinfo/ovirt-devel', '' ]
-    smolt-devel: [ 'https://fedorahosted.org/mailman/listinfo/smolt-devel', 'pipermail' ]
     spacewalk-devel: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-devel', '']
     spacewalk-list: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-list', '' ]
     suds: [ 'https://fedorahosted.org/mailman/listinfo/suds', 'pipermail' ]
@@ -35,7 +31,6 @@ explicit_lists:
     seam-dev: [ 'https://lists.jboss.org/mailman/listinfo/seam-dev', 'jboss' ]
     rules-users: [ 'https://lists.jboss.org/mailman/listinfo/rules-users', 'jboss' ]
     rules-dev: [ 'https://lists.jboss.org/mailman/listinfo/rules-dev', 'jboss' ]
-    rhmessaging-dev : ['https://lists.jboss.org/mailman/listinfo/rhmessaging-dev', 'jboss' ]
     netty-users: [ 'https://lists.jboss.org/mailman/listinfo/netty-users', 'jboss' ]
     netty-dev: [ 'https://lists.jboss.org/mailman/listinfo/netty-dev', 'jboss' ]
     jbpm-users: [ 'https://lists.jboss.org/mailman/listinfo/jbpm-users', 'jboss' ]
@@ -48,8 +43,6 @@ explicit_lists:
     jbosscache-users: [ 'https://lists.jboss.org/mailman/listinfo/jbosscache-users', 'jboss' ]
     jboss-user: [ 'https://lists.jboss.org/mailman/listinfo/jboss-user', 'jboss' ]
     jboss-development: ['https://lists.jboss.org/mailman/listinfo/jboss-development', 'jboss' ]
-    jboss-cluster-dev: ['https://lists.jboss.org/mailman/listinfo/jboss-cluster-dev', 'jboss' ]
-    hibernate-users: ['https://lists.jboss.org/mailman/listinfo/hibernate-users', 'jboss' ]
     hibernate-dev: ['https://lists.jboss.org/mailman/listinfo/hibernate-dev', 'jboss' ]
     esb-users: ['https://lists.jboss.org/mailman/listinfo/esb-users', 'jboss' ]
     esb-dev: ['https://lists.jboss.org/mailman/listinfo/esb-dev', 'jboss' ]
@@ -60,3 +53,9 @@ limit_months:
 scan_mailmen:
     0
 track_limit: 0.01
+report_months:
+    - 2008-July
+    - 2008-August
+    - 2008-September
+    - 2008-October
+
