@@ -55,6 +55,7 @@ class Scanner
       list_count = 1
       lists_size = @lists.length()
       @lists.each { |list, list_config|
+         hits = Post.connection.select_values("select url from posts where list_id = '#{list}'")
          (list_url, list_type) = list_config
          # url is like: https://www.redhat.com/mailman/listinfo/amd64-list
          if list_type == "default" or list_type == ""
@@ -65,12 +66,12 @@ class Scanner
              raise "unknown mailman type: #{list_type}"
          end
          puts "list #{list_count}/#{lists_size}"
-         scan_archives(list,list_url,list_count,lists_size)
+         scan_archives(list,list_url,list_count,lists_size,hits)
          list_count = list_count + 1
       }
    end
 
-   def scan_archives(list,url,list_count,lists_size)
+   def scan_archives(list,url,list_count,lists_size,hits)
       # read a mailing archives page to find the threads listed on that page
       mon_count = 1
       puts "#{list} threads: #{url}"
@@ -83,7 +84,7 @@ class Scanner
       doc.search("a") { |link|
          new_url = link.attributes["href"]
          if new_url.include?("thread.html")
-             scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count)
+             scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count,hits)
              mon_count = mon_count +1
          end
          if mon_count > @limit_months:
@@ -93,11 +94,12 @@ class Scanner
 
    end
 
-   def scan_threads(list,url,list_count,lists_size,mon_count)
+   def scan_threads(list,url,list_count,lists_size,mon_count,hits)
       # read a given month's archives page to find the messages within
 
       count = 0
       top = url.split("/").slice(0..-2).join("/") # FIXME
+      puts "scanning: #{url}"
       begin
           doc = Hpricot(URI.parse(url).read())
       rescue OpenURI::HTTPError
@@ -110,7 +112,9 @@ class Scanner
              unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
                  new_url = "#{top}/#{new_url}"
                  count = count + 1 
-                 scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
+                 if not hits.grep(new_url)
+                     scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
+                 end
              end
          end
       }
@@ -118,13 +122,8 @@ class Scanner
 
    def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count)
 
-      puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
       
-      hit = Post.connection.select_values("select count(*) from posts where url = '#{msg_url}'")[0]
-      if hit.to_i() != 0
-         puts "!"
-         return 
-      end
+      puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
 
       begin
           doc = Hpricot(URI.parse(msg_url).read())

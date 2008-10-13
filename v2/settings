@@ -49,11 +49,20 @@ explicit_lists:
     dtf-users: ['https://lists.jboss.org/mailman/listinfo/dtf-users', 'jboss' ]
     dna-users: ['https://lists.jboss.org/mailman/listinfo/dna-users', 'jboss' ]
 limit_months:
-    4
+    12
 scan_mailmen:
     0
 track_limit: 0.01
 report_months:
+    - 2007-October
+    - 2007-November
+    - 2007-December
+    - 2008-January
+    - 2008-Feburary
+    - 2008-March
+    - 2008-April
+    - 2008-May
+    - 2008-June
     - 2008-July
     - 2008-August
     - 2008-September

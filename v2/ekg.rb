@@ -5,6 +5,7 @@ require 'active_record'
 
 require 'grapher'
 require 'scanner'
+require 'finder'
 require 'db'
 
 #config = "/etc/ekg/settings"
@@ -12,11 +13,13 @@ config = "settings" # until packaged
 
 is_scanning = false
 is_graphing = false
+is_finding  = false
 
 opts = GetoptLong.new(
    [ "--config", "-c", GetoptLong::OPTIONAL_ARGUMENT ],
    [ "--scan",   "-s", GetoptLong::NO_ARGUMENT ],
-   [ "--graph",  "-g", GetoptLong::NO_ARGUMENT ]
+   [ "--graph",  "-g", GetoptLong::NO_ARGUMENT ],
+   [ "--find",   "-f", GetoptLong::NO_ARGUMENT ]
 )
 
 opts.each { |opt, arg|
@@ -27,10 +30,12 @@ opts.each { |opt, arg|
       is_scanning = true
    when "--graph"
       is_graphing = true
+   when "--find"
+      is_finding =  true
    end
 }
 
-if not (is_scanning or is_graphing)
+if not (is_scanning or is_graphing or is_finding)
    puts "nothing to do"
    exit(1)
 end
@@ -41,5 +46,5 @@ db.setup()
 
 Scanner.new(config).run if is_scanning
 Grapher.new(config).run if is_graphing
-
+Finder.new(config).run  if is_finding
 

@@ -201,7 +201,7 @@ class Grapher
               colors << "FFFF00" 
            elsif (label =~/fedoraproject/) 
               colors << "0000FF"
-           elsif (label =~/gmail.com/)
+           elsif ((label =~/gmail.com/) || (label=~/googlemail.com/))
               colors << "00FF00"
            else 
               colors << "AAAAAA"
