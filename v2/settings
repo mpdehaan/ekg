@@ -8,6 +8,7 @@ explicit_lists:
     csi-devel: [ 'https://fedorahosted.org/mailman/listinfo/csi-devel', 'pipermail', '' ]
     epel-devel-list: [ 'https://www.redhat.com/mailman/listinfo/epel-devel-list', '' ]
     et-mgmt-tools: [ 'https://www.redhat.com/mailman/listinfo/et-mgmt-tools', '' ]
+    fedora-list: [ 'http://www.redhat.com/mailman/listinfo/fedora-list', '' ]
     fedora-devel-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-devel-list', '' ]
     fedora-infrastructure-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-infrastructure-list', '' ]
     fedora-olpc-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-olpc-list' , '' ]
@@ -58,7 +59,7 @@ report_months:
     - 2007-November
     - 2007-December
     - 2008-January
-    - 2008-Feburary
+    - 2008-February
     - 2008-March
     - 2008-April
     - 2008-May

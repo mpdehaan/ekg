@@ -50,7 +50,7 @@ class Grapher
         outside_ttl  = 0
         total_ttl    = 0
 
-        puts months
+        # puts months
 
         months.each { |month|
             puts "this month: #{month}"
@@ -60,13 +60,13 @@ class Grapher
 
             query = "select url from posts p where list_id == '#{list}' and url like '%/#{month}/%'"
             outside_query = query + " and from_domain <> 'jboss.org' and from_domain <> 'jboss.com' and from_domain <> 'redhat.com'"
-            puts query
-            puts outside_query 
+            #puts query
+            #puts outside_query 
 
             month_ct   = Post.connection.select_values(query).length()
             outside_ct = Post.connection.select_values(outside_query).length()
             inside_ct  = month_ct - outside_ct
-            puts "month=#{month}, posts=#{month_ct}, inside=#{inside_ct}, outside=#{outside_ct}"
+            #puts "month=#{month}, posts=#{month_ct}, inside=#{inside_ct}, outside=#{outside_ct}"
 
             if (outside_ct > month_ct)
                raise "something wrong here"
@@ -81,8 +81,9 @@ class Grapher
             total_ttl     = total_ttl   + month_ct
 
         }
+        # raise "boom"
         dataset = [ total_data, inside_data, outside_data ]
-        puts dataset
+        #puts dataset
         return total_ttl, inside_ttl, outside_ttl, dataset
 
     end

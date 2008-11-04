@@ -99,7 +99,7 @@ class Scanner
 
       count = 0
       top = url.split("/").slice(0..-2).join("/") # FIXME
-      puts "scanning: #{url}"
+      puts "scanning: (thread) #{url}"
       begin
           doc = Hpricot(URI.parse(url).read())
       rescue OpenURI::HTTPError
@@ -112,7 +112,7 @@ class Scanner
              unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
                  new_url = "#{top}/#{new_url}"
                  count = count + 1 
-                 if not hits.grep(new_url)
+                 if not hits.grep(new_url).length() > 0
                      scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
                  end
              end
