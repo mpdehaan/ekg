@@ -29,7 +29,6 @@ explicit_lists:
     fedora-news-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-news-list' , '' ]
     fedora-nightlife-devel-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-nightlife-devel-list' , '' ]
     fedora-olpc-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-olpc-list' , '' ]
-    fedora-package-review: [ 'https://www.redhat.com/mailman/listinfo/fedora-package-review' , '' ]
     fedora-qa-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-qa-list' , '' ]
     fedora-secondary-list: ['https://admin.fedoraproject.org/mailman/listinfo/fedora-secondary-list' , '' ]
     fedora-spins-list: ['https://admin.fedoraproject.org/mailman/listinfo/fedora-spins' , '' ]
@@ -95,4 +94,5 @@ report_months:
     - 2008-August
     - 2008-September
     - 2008-October
+    - 2008-November
 
