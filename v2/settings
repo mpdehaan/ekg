@@ -7,6 +7,7 @@ explicit_lists:
     anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
     augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
     cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
+    condor-devel: [ 'https://lists.cs.wisc.edu/mailman/listinfo/condor-devel', '']
     csi-devel: [ 'https://fedorahosted.org/mailman/listinfo/csi-devel', 'pipermail', '' ]
     dna-users: ['https://lists.jboss.org/mailman/listinfo/dna-users', 'jboss' ]
     dtf-users: ['https://lists.jboss.org/mailman/listinfo/dtf-users', 'jboss' ]
@@ -81,7 +82,6 @@ scan_mailmen:
     0
 track_limit: 0.01
 report_months:
-    - 2007-October
     - 2007-November
     - 2007-December
     - 2008-January
@@ -94,5 +94,4 @@ report_months:
     - 2008-August
     - 2008-September
     - 2008-October
-    - 2008-November
 
