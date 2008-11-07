@@ -88,18 +88,12 @@ class Scanner
              thread_url = "#{url}/#{new_url}"
 
              scan_this = false
-             if mon_count == 1
-                # always scan the current month for new posts
-                scan_this = true
-             else
-                # only bother fetching the page for the month if we haven't registered that we've finished
-                # it before
-                found = Scan.connection.select_values("select COUNT(*) from scans where url = \"#{thread_url}\"")[0].to_f()
+             if mon_count != 1
+                found = Scan.connection.select_values("select COUNT(*) from scans where url = \"#{thread_url}\"")[0].to_i()
                 scan_this = true if found == 0
              end
 
-             if scan_this
-                 # print "DEBUG: #{list}, #{url}/#{new_url}, #{list_count}, #{lists_size}, #{mon_count}, #{hits}"
+             if (mon_count == 1) || (scan_this)
                  scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count,hits)
              end
 
@@ -139,9 +133,10 @@ class Scanner
                   unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
                       new_url = "#{top}/#{new_url}"
                       count = count + 1 
-                      if not hits.grep(new_url).length() > 0
-                          scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
+                      if (count % 20 == 0)
+                         puts "#{list} (list #{list_count}/#{lists_size} month #{mon_count}/#{@limit_months}) post #{count}"
                       end
+                      scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
                   end
               end
           end
@@ -149,12 +144,6 @@ class Scanner
    end
 
    def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count)
-
-      
-      if (count % 20 == 0)
-          # less output noise, and faster, as stdout is slow
-          puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
-      end
 
       begin
           doc = Hpricot(URI.parse(msg_url).read())
