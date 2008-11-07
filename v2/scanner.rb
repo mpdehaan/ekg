@@ -106,24 +106,30 @@ class Scanner
           puts "warning: could not access threads: #{url}"
           return
       end
-      doc.search("a") { |link|
-         if link.attributes.has_key?("href")
-             new_url = link.attributes["href"]
-             unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
-                 new_url = "#{top}/#{new_url}"
-                 count = count + 1 
-                 if not hits.grep(new_url).length() > 0
-                     scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
-                 end
-             end
-         end
-      }
+
+      Post.transaction do
+          doc.search("a") do |link|
+              if link.attributes.has_key?("href")
+                  new_url = link.attributes["href"]
+                  unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
+                      new_url = "#{top}/#{new_url}"
+                      count = count + 1 
+                      if not hits.grep(new_url).length() > 0
+                          scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
+                      end
+                  end
+              end
+          end
+      end
    end
 
    def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count)
 
       
-      puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
+      if (count % 20 == 0)
+          # less output noise, and faster, as stdout is slow
+          puts "#{list} (#{list_count}/#{lists_size} #{mon_count}/#{@limit_months}) post #{count}"
+      end
 
       begin
           doc = Hpricot(URI.parse(msg_url).read())
@@ -242,10 +248,9 @@ class Scanner
          :from_addr => from_addr,
          :sent_date => sent_date
       )
-   end
+      # Post.connection.execute(stmt)
 
-  
-   
+   end
 
 end
 
