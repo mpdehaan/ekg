@@ -12,6 +12,9 @@ class Db
    def setup()
        begin
            ActiveRecord::Schema.define do
+               create_table :scans do |table|
+                   table.column :url
+               end
                create_table :posts do |table|
                    table.column :url, :string
                    table.column :subject, :string
@@ -19,9 +22,6 @@ class Db
                    table.column :from_domain, :string
                    table.column :from_addr, :string
                    table.column :sent_date, :date
-               end
-               create_table :scans do |table|
-                   table.column :url, :string
                end
            end
        rescue

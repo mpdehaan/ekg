@@ -84,7 +84,32 @@ class Scanner
       doc.search("a") { |link|
          new_url = link.attributes["href"]
          if new_url.include?("thread.html")
-             scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count,hits)
+
+             thread_url = "#{url}/#{new_url}"
+
+             scan_this = false
+             if mon_count == 1
+                # always scan the current month for new posts
+                scan_this = true
+             else
+                # only bother fetching the page for the month if we haven't registered that we've finished
+                # it before
+                found = Scan.connection.select_values("select COUNT(*) from scans where url = \"#{thread_url}\"")[0].to_f()
+                scan_this = true if found == 0
+             end
+
+             if scan_this
+                 # print "DEBUG: #{list}, #{url}/#{new_url}, #{list_count}, #{lists_size}, #{mon_count}, #{hits}"
+                 scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count,hits)
+             end
+
+             # flag that we are done scanning the month if this month is not THIS month
+             if mon_count != 1
+                 flag = Scan.create(
+                     :url => "#{url}/#{new_url}"
+                 )
+             end 
+
              mon_count = mon_count +1
          end
          if mon_count > @limit_months:
