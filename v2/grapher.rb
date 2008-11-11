@@ -244,6 +244,12 @@ class Grapher
 
          total_ct, inside_ct, outside_ct, dataset = compute_time_dataset(list,months)
 
+         # HACK -- print list, inside, outside, total for grepping
+         puts "dashlist #{list}"
+         puts "dashinside #{inside_ct}"
+         puts "dashoutside #{outside_ct}"
+         puts "dashtotal #{total_ct}"
+
          month_chart = Gchart.line(
              :title => '', 
              :data => dataset,
