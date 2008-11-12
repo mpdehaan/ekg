@@ -94,4 +94,9 @@ report_months:
     - 2008-August
     - 2008-September
     - 2008-October
-
+colors:
+    redhat.com: FF0000
+    jboss: FFFF00
+    fedoraproject: 0000FF
+    gmail.com: 00FF00
+    googlemail.com: 00FF00

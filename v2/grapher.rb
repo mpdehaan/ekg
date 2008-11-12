@@ -193,23 +193,21 @@ class Grapher
     end
 
     def colorize(labels)
-
-        colors = []
-        labels.each do |label|
-           if (label =~ /redhat.com/) 
-              colors << "FF0000"
-           elsif (label =~/jboss/) 
-              colors << "FFFF00" 
-           elsif (label =~/fedoraproject/) 
-              colors << "0000FF"
-           elsif ((label =~/gmail.com/) || (label=~/googlemail.com/))
-              colors << "00FF00"
-           else 
-              colors << "AAAAAA"
-           end 
- 
+      colors = []
+      color_tags = @data['colors']
+      labels.each do |label|
+        col_found = false # i don't know how to break loops in Ruby yet -ynemoy
+        color_tags.each_pair do |dom, color|
+          if (label =~ Regexp.new(dom) and not col_found)
+            colors << color
+            col_found = true
+          end
         end
-        return colors
+        if (not col_found)
+          colors << "AAAAAA"
+        end
+      end
+      return colors
     end
 
    # ===================================================================
