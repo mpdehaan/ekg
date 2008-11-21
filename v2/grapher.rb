@@ -429,11 +429,8 @@ class Grapher
         # open the output graph and generate a section for each list
         File.open("graphs.html","w+") { |f|
            f.write(File.open("prefix").read())
-           n = 0
            lists.sort().each { |list|  
-              n = n + 1 
               with_each_list(list,f,months) 
-              break if (n==10) # for squirrels
            }
            f.write(File.open("postfix").read())
         }
