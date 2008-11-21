@@ -90,12 +90,74 @@ class Grapher
             total_ttl     = total_ttl   + month_ct
 
         }
-        # raise "boom"
         dataset = [ total_data, inside_data, outside_data ]
-        #puts dataset
         return total_ttl, inside_ttl, outside_ttl, dataset
 
     end
+
+    # ===================================================================
+
+    def compute_time_dataset2(list,months)
+
+        # return an array of arrays containing the following graphs over time
+
+        # total unique posters on list per month in tracked domain A
+        # total unique posters on list per month in tracked domain B (etc)
+        # total unique posters outside of tracked domains
+        
+        inside_data  = []
+
+        inside_ttl   = 0
+
+        # puts months
+
+        domains = @data['colors'].keys().sort()
+
+        results = {}
+
+
+        months.each { |month|
+        
+            query = "select distinct from_addr from posts p where list_id = '#{list}' and url like '%/#{month}/%'"
+            total_ct = Post.connection.select_values(query).length()
+ 
+            puts "this month: #{month}"
+
+            color_tags = @data['colors']
+
+            tracked = 0
+            color_tags.each_pair do |domain, color|       
+
+                if not results.has_key?(domain)
+                   results[domain] = []
+                end
+
+           
+                query = "select distinct from_addr from posts p where list_id = '#{list}' and from_domain = '#{domain}' and url like '%/#{month}/%'"
+
+                count   = Post.connection.select_values(query).length()
+
+                results[domain] << count
+
+                tracked += count
+
+            end
+
+            print "total = #{total_ct}"
+            print "tracked = #{tracked}"
+           
+            untracked = total_ct - tracked
+            print "untracked = #{untracked}"
+            results['other'] = [] if not results.has_key?("other")
+            results['other'] << untracked
+            
+
+        }
+
+        return results
+
+    end
+
 
     # ===================================================================
 
@@ -201,6 +263,8 @@ class Grapher
 
     end
 
+    # ===================================================================
+
     def colorize(labels)
       colors = []
       color_tags = @data['colors']
@@ -251,6 +315,10 @@ class Grapher
          total_ct, inside_ct, outside_ct, dataset = compute_time_dataset(list,months)
 
          # HACK -- print list, inside, outside, total for grepping
+         # 
+         # should we move this to a reporter module or make a seperate flag to the grapher that outputs text
+         # instead, or also generate a seperate report at the same time as the HTML page? -- MPD
+
          puts "dashlist #{list}"
          puts "dashinside #{inside_ct}"
          puts "dashoutside #{outside_ct}"
@@ -268,6 +336,44 @@ class Grapher
          return "<TD><IMG SRC='#{month_chart}'/></TD>"
 
     end
+
+    # ===================================================================
+    
+
+    def get_time_cell2(list,months)
+
+         # generate a graph cell showing unique posters per tracked domain per month
+
+         results = compute_time_dataset2(list,months)
+
+         # make sure the colors are in the right order
+         colors = []
+         points = []
+         legends = []
+         results.each_pair do |domain, values|
+             points << values
+             if domain == 'other'
+                 colors << "AAAAAA"
+             else
+                 colors << @data['colors'][domain]
+             end
+             last = values[-1]
+             legends << "#{domain} (last=#{last})" # FIXME: include total count here
+         end
+
+         month_chart = Gchart.line(
+             :title => '', 
+             :data => points,
+             :legend => legends,
+             :size => '400x300',
+             :line_colors => colors,
+             :axis_labels => months   
+         )
+ 
+         return "<TD><IMG SRC='#{month_chart}'/></TD>"
+
+    end
+
 
     # ===================================================================
 
@@ -306,6 +412,7 @@ class Grapher
          f.write(get_identity_cell(listurl, list))
          f.write(get_mix_cell(buckets,list))
          f.write(get_time_cell(list,months))
+         f.write(get_time_cell2(list,months))
          f.write("</TR>")
 
     end
@@ -322,7 +429,12 @@ class Grapher
         # open the output graph and generate a section for each list
         File.open("graphs.html","w+") { |f|
            f.write(File.open("prefix").read())
-           lists.sort().each { |list| with_each_list(list,f,months) }
+           n = 0
+           lists.sort().each { |list|  
+              n = n + 1 
+              with_each_list(list,f,months) 
+              break if (n==10) # for squirrels
+           }
            f.write(File.open("postfix").read())
         }
 

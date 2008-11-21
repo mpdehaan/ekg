@@ -2,8 +2,6 @@
 all_your_base_owner: us
 mailmen: []
 explicit_lists: 
-    amqp-dev-list: ['https://www.redhat.com/mailman/listinfo/amqp-dev-list', '']
-    amqp-users-list: ['https://www.redhat.com/mailman/listinfo/amqp-users-list', '']
     anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
     augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
     cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
@@ -95,8 +93,8 @@ report_months:
     - 2008-September
     - 2008-October
 colors:
-    redhat.com: FF0000
-    jboss: FFFF00
     fedoraproject: 0000FF
     gmail.com: 00FF00
     googlemail.com: 00FF00
+    jboss: FFFF00
+    redhat.com: FF0000
