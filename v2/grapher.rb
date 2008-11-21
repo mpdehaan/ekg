@@ -225,7 +225,6 @@ class Grapher
 
          # generate a pie graph cell showing the mix of folks contributing on this list, showing
          # what domains are most active.
-         # TO DO -- smart color coding for redhat.com, jboss.org, gmail.com, and fedoraproject.org
 
          buf = "<TD>\n"
          # figure out the data we need to build the google chart
@@ -266,20 +265,6 @@ class Grapher
              :axis_labels => months   
          )
  
-         #month_chart = Gchart.line do |g|
-         #    g.title = ''
-         #    g.data = dataset
-         #    g.legend = ["total (#{total_ct})","inside (#{inside_ct})","outside (#{outside_ct})"]
-         #    g.size = '500x250'
-         #    g.line_colors = [ "000000", "ff0000", "0000ff" ]
-             #g.axis(:bottom) do |a|
-             #   a.labels = months 
-             #end  
-             #g.axis(:left) do |a|
-             #   a.range = 0..1000
-             #end
-         #end
-
          return "<TD><IMG SRC='#{month_chart}'/></TD>"
 
     end
@@ -321,7 +306,6 @@ class Grapher
          f.write(get_identity_cell(listurl, list))
          f.write(get_mix_cell(buckets,list))
          f.write(get_time_cell(list,months))
-         # f.write(get_stats_cell(buckets))
          f.write("</TR>")
 
     end
