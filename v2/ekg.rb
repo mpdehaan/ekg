@@ -14,6 +14,7 @@ require 'active_record'
 
 require 'grapher'
 require 'scanner'
+require 'kevinbacon'
 require 'finder'
 require 'db'
 
@@ -28,12 +29,14 @@ end
 is_scanning = false
 is_graphing = false
 is_finding  = false
+is_kevinbacon = false
 
 opts = GetoptLong.new(
    [ "--config", "-c", GetoptLong::OPTIONAL_ARGUMENT ],
    [ "--scan",   "-s", GetoptLong::NO_ARGUMENT ],
    [ "--graph",  "-g", GetoptLong::NO_ARGUMENT ],
-   [ "--find",   "-f", GetoptLong::NO_ARGUMENT ]
+   [ "--find",   "-f", GetoptLong::NO_ARGUMENT ],
+   [ "--kevinbacon", "-k", GetoptLong::NO_ARGUMENT ]
 )
 
 begin
@@ -47,6 +50,8 @@ begin
          is_graphing = true
       when "--find"
          is_finding =  true
+      when "--kevinbacon"
+         is_kevinbacon = true
       end
    }
 rescue GetoptLong::InvalidOption => ex
@@ -54,7 +59,7 @@ rescue GetoptLong::InvalidOption => ex
    exit(2)
 end
 
-if not (is_scanning or is_graphing or is_finding)
+if not (is_scanning or is_graphing or is_finding or is_kevinbacon)
    puts "nothing to do"
    exit(1)
 end
@@ -66,3 +71,5 @@ db.setup()
 Scanner.new(config).run if is_scanning
 Grapher.new(config).run if is_graphing
 Finder.new(config).run  if is_finding
+KevinBacon.new(config).run if is_kevinbacon
+
