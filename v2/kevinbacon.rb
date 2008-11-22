@@ -53,8 +53,8 @@ class KevinBacon
               pos2 = pos2 + 1
               if list1.casecmp(list2) == -1
                   chrono = "#{pos1}/#{pos2}"
-                  posters1 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list1}'")
-                  posters2 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list2}'")
+                  posters1 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list1}' and from_domain <> 'redhat.com'")
+                  posters2 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list2}' and from_domain <> 'redhat.com'")
                   intersection = posters1 & posters2
                   weight = intersection.length()
                   puts "#{chrono}: #{list1} * #{list2} =  #{intersection.length()}"
@@ -76,7 +76,7 @@ class KevinBacon
         linkage.each_pair do |combo, force|
            (list1,list2) = combo.split("-")
            outfile.write(combo)
-           outfile.write(" [ weight=#{force}, label=\"#{force}\"]\n")
+           outfile.write(" [ weight=#{force * force}, label=\"#{force}\"]\n")
         end
 
         outfile.write("}\n")
