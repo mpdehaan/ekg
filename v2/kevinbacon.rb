@@ -25,6 +25,9 @@ class KevinBacon
         File.open(config) { |yf|
            @data = YAML::load(yf)
         }
+        File.open("kevinbacon_settings") { |kb|
+           @kb = YAML::load(kb)
+        }
         @track_limit = @data["track_limit"]
         @listdata = @data["explicit_lists"]
 
@@ -41,7 +44,7 @@ class KevinBacon
         gravity.default = 0
         linkage.default = 0
         pos1 = 0
-        set1 = lists.sort().clone()
+        set1 = @kb['explicit_lists'].keys().sort().clone()
         set2 = set1.clone()
         set1.each() do |list1|
            pos1 = pos1 + 1
@@ -57,7 +60,7 @@ class KevinBacon
                   puts "#{chrono}: #{list1} * #{list2} =  #{intersection.length()}"
                   lname1 = list1.gsub("-","_")
                   lname2 = list2.gsub("-","_")
-                  if weight != 0
+                  if weight > @kb["minimum_score"]
                       gravity[lname1] = gravity[lname1] + weight
                       gravity[lname2] = gravity[lname2] + weight 
                       linkage["#{lname1} -- #{lname2}"] = weight
