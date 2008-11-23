@@ -41,7 +41,8 @@ class KevinBacon
        if domain != "other"
            query = "from_domain#{search}"
        else
-           query = "from_domain <> 'redhat.com' and from_domain <> 'googlemail.com' and from_domain <> 'gmail.com' and from_domain <> 'fedoraproject.org' and from_domain <> 'jboss.com' and from_domain <> 'jboss.org'"
+           #query = "from_domain <> 'redhat.com' and from_domain <> 'googlemail.com' and from_domain <> 'gmail.com' and from_domain <> 'fedoraproject.org' and from_domain <> 'jboss.com' and from_domain <> 'jboss.org'"
+           query = "from_domain <> 'redhat.com'"
        end
        
        posters1 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list1}' and #{query}")
@@ -54,7 +55,7 @@ class KevinBacon
        gravity[lname1] = gravity[lname1] + weight
        gravity[lname2] = gravity[lname2] + weight
        if weight >= @kb["minimum_score"]
-           linkage["#{lname1} -- #{lname2}"] = "#{weight}-#{color}"
+           linkage["#{lname1}--#{lname2}"] = "#{weight}-#{color}"
        end
     end
 
@@ -62,8 +63,8 @@ class KevinBacon
     
     def compute(lists, outfile)
 
-        outfile.write("graph EKGLinkage {\n")
-       
+        outfile.write("digraph EKGLinkage {\n")
+ 
         gravity = {}
         linkage = {}
         gravity.default = 0
@@ -77,41 +78,69 @@ class KevinBacon
            set2.each() do |l2|
               pos2 = pos2 + 1
               puts "#{pos1}/#{pos2}"
+              # development code to stop things early:
+              # break if pos1 > 1
  
               if l1.casecmp(l2) == -1
                   subcompute(l1,l2,"redhat.com",1, gravity, linkage, "red")
-                  subcompute(l1,l2,"gmail.com",1, gravity, linkage, "green")
-                  subcompute(l1,l2,"googlemail.com",1, gravity, linkage, "green")
-                  subcompute(l1,l2,"fedoraproject.org",1, gravity, linkage, "blue")
-                  subcompute(l1,l2,"jboss.org",1, gravity, linkage, "yellow")
-                  subcompute(l1,l2,"jboss.com",1, gravity, linkage, "yellow")
-                  subcompute(l1,l2,"other",1, gravity, linkage, "magenta")
+                  #subcompute(l1,l2,"gmail.com",1,  gravity, linkage, "green")
+                  #subcompute(l1,l2,"googlemail.com",1, gravity, linkage, "green")
+                  #subcompute(l1,l2,"fedoraproject.org",1, gravity, linkage, "blue")
+                  #subcompute(l1,l2,"jboss.org",1, gravity, linkage, "yellow")
+                  #subcompute(l1,l2,"jboss.com",1, gravity, linkage, "yellow")
+                  subcompute(l1,l2,"other",1, gravity, linkage, "green")
               end
            end
         end
-        gravity.each_pair do |list, force|
-           puts "#{list} has gravity #{force}"
-           outfile.write("#{list} [label=\"#{list} (#{force})\"]\n")
-           outfile.write("\n")
+
+         
+        clusters = {}
+        @kb['explicit_lists'].each_pair do |k,c|
+           clusters[c] = c
         end
+
+        clusters.keys().each do |cluster|
+           # subgraphs can result in misleading data
+           #outfile.write("subgraph #{cluster} {\n")
+           #outfile.write("label=\"#{cluster}\";\n")
+           set1.each do |listname|
+              if @kb['explicit_lists'][listname] == cluster
+                  usename = listname.gsub("-","_") 
+                  outfile.write("#{usename} [label=\"#{listname.gsub("-","_")} (#{gravity[usename]})\"]\n")
+                  outfile.write("\n")
+              end
+           end
+           #outfile.write("}\n")
+        end
+
         linkage.each_pair do |combo, attributes|
-           (list1,list2) = combo.split("-")
+           (list1,list2) = combo.split("--")
            (force, color) = attributes.split("-")
            force = force.to_i()
-           outfile.write(combo)
-           outfile.write(" [ weight=#{force * force}, color=\"#{color}\", label=\"#{force}\"]\n")
+           if gravity[list1] > gravity[list2]
+
+               outfile.write("#{list1} -> #{list2}")
+           elsif gravity[list1] == gravity[list2]
+               outfile.write("#{list1} -- #{list2}")
+           else
+               outfile.write("#{list2} -> #{list1}")
+           end
+
+           outfile.write(" [ weight=#{force * force}, color=\"#{color}\", label=\"#{force}\"];\n")
+
         end
 
         outfile.write("}\n")
         puts "---"
         puts "done."
-        puts "now run: dot kevinbacon.gv -Tsvg -o kevinbacon.svg"
+        cmd = "dot kevinbacon.gv -Tsvg -o kevinbacon.svg"
+        puts "now run: #{cmd}"
     end
 
     def run()
-        lists = Post.connection.select_values("select DISTINCT(list_id) from posts")
+        lists = @kb['explicit_lists'].keys()
         File.open("kevinbacon.gv","w+") { |f|
-           compute(lists,f)
+           compute(lists,f) 
         }
      end
 

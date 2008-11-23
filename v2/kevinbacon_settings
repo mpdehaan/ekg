@@ -1,38 +1,32 @@
 ---
-minimum_score: 3
+minimum_score: 4
 explicit_lists: 
-    anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
-    augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
-    cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
-    condor-devel: [ 'https://lists.cs.wisc.edu/mailman/listinfo/condor-devel', '']
-    csi-devel: [ 'https://fedorahosted.org/mailman/listinfo/csi-devel', 'pipermail', '' ]
-    epel-devel-list: [ 'https://www.redhat.com/mailman/listinfo/epel-devel-list', '' ]
-    et-mgmt-tools: [ 'https://www.redhat.com/mailman/listinfo/et-mgmt-tools', '' ]
-    fedora-list: [ 'http://www.redhat.com/mailman/listinfo/fedora-list', '' ]
-    fedora-devel-java-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-devel-java-list', '' ]
-    fedora-devel-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-devel-list', '' ]
-    fedora-directory-devel: [ 'https://www.redhat.com/mailman/listinfo/fedora-directory-devel', '' ]
-    fedora-directory-users: [ 'https://www.redhat.com/mailman/listinfo/fedora-directory-users', '' ]
-    fedora-i18n-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-i18n-list', '' ]
-    fedora-infrastructure-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-infrastructure-list', '' ]
-    fedora-laptop-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-laptop-list', '' ]
-    fedora-olpc-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-olpc-list' , '' ]
-    fedora-qa-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-qa-list' , '' ]
-    fedora-spins-list: ['https://admin.fedoraproject.org/mailman/listinfo/fedora-spins' , '' ]
-    fedora-test-list: [ 'https://www.redhat.com/mailman/listinfo/fedora-qa-list' , '' ]
-    fedora-trans-list: [ 'http://www.redhat.com/mailman/listinfo/fedora-trans-list', '' ]
-    fedora-xen: [ 'https://www.redhat.com/mailman/listinfo/fedora-xen', '' ]
-    freeipa-devel: [ 'https://www.redhat.com/mailman/listinfo/freeipa-devel', '' ]
-    freeipa-interest: [ 'https://www.redhat.com/mailman/listinfo/freeipa-interest', '' ]
-    freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
-    func-list: [ 'https://www.redhat.com/mailman/listinfo/func-list', '' ]
-    genome-list: [ 'https://www.redhat.com/mailman/listinfo/genome-list', '' ]
-    kickstart-list: [ 'https://www.redhat.com/mailman/listinfo/kickstart-list', '' ]
-    libvir-list: [ 'https://www.redhat.com/mailman/listinfo/libvir-list', '' ]
-    ovirt-devel: [ 'https://www.redhat.com/mailman/listinfo/ovirt-devel', '' ]
-
-    rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
-    spacewalk-devel: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-devel', '']
-    spacewalk-list: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-list', '' ]
-    stateless-list: [ 'http://www.redhat.com/mailman/listinfo/stateless-list' , '' ]
-    thincrust-devel: [ 'https://www.redhat.com/mailman/listinfo/thincrust-devel', '']
+    anaconda-devel-list: 'installer'
+    augeas-devel: 'tools'
+    cobbler: 'installer'
+    csi-devel: 'tools'
+    epel-devel-list: 'os'
+    et-mgmt-tools: 'tools'
+    fedora-list: 'os'
+    fedora-devel-list: 'os'
+    fedora-directory-devel: 'directory'
+    fedora-directory-users: 'directory'
+    fedora-infrastructure-list: 'os'
+    fedora-laptop-list: 'os'
+    fedora-olpc-list: 'aux'
+    fedora-qa-list: 'qa'
+    fedora-test-list: 'qa'
+    fedora-trans-list: 'translation'
+    fedora-xen: 'virt'
+    freeipa-devel: 'os'
+    freeipa-interest: 'directory'
+    freeipa-users: 'directory'
+    func-list: 'tools'
+    kickstart-list: 'tools'
+    libvir-list: 'virt'
+    ovirt-devel: 'virt'
+    rhn-users: 'rhn'
+    spacewalk-devel: 'rhn'
+    spacewalk-list: 'rhn'
+    stateless-list: 'aux'
+    thincrust-devel: 'tools'
