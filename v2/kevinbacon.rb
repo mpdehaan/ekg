@@ -32,6 +32,31 @@ class KevinBacon
         @listdata = @data["explicit_lists"]
 
     end
+ 
+    # ====================================================
+    
+    def subcompute(list1, list2, domain, multiplier, gravity, linkage, color)
+ 
+       search = "='#{domain}'"
+       if domain != "other"
+           query = "from_domain#{search}"
+       else
+           query = "from_domain <> 'redhat.com' and from_domain <> 'googlemail.com' and from_domain <> 'gmail.com' and from_domain <> 'fedoraproject.org' and from_domain <> 'jboss.com' and from_domain <> 'jboss.org'"
+       end
+       
+       posters1 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list1}' and #{query}")
+       posters2 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list2}' and #{query}")
+       intersection = posters1 & posters2
+       weight = intersection.length()
+       puts "          #{list1} * #{list2} =  #{intersection.length()} on #{domain}"
+       lname1 = list1.gsub("-","_")
+       lname2 = list2.gsub("-","_")
+       gravity[lname1] = gravity[lname1] + weight
+       gravity[lname2] = gravity[lname2] + weight
+       if weight >= @kb["minimum_score"]
+           linkage["#{lname1} -- #{lname2}"] = "#{weight}-#{color}"
+       end
+    end
 
     # ====================================================
     
@@ -46,25 +71,21 @@ class KevinBacon
         pos1 = 0
         set1 = @kb['explicit_lists'].keys().sort().clone()
         set2 = set1.clone()
-        set1.each() do |list1|
+        set1.each() do |l1|
            pos1 = pos1 + 1
            pos2 = 0 
-           set2.each() do |list2|
+           set2.each() do |l2|
               pos2 = pos2 + 1
-              if list1.casecmp(list2) == -1
-                  chrono = "#{pos1}/#{pos2}"
-                  posters1 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list1}' and from_domain <> 'redhat.com'")
-                  posters2 = Post.connection.select_values("select distinct from_addr from posts where list_id='#{list2}' and from_domain <> 'redhat.com'")
-                  intersection = posters1 & posters2
-                  weight = intersection.length()
-                  puts "#{chrono}: #{list1} * #{list2} =  #{intersection.length()}"
-                  lname1 = list1.gsub("-","_")
-                  lname2 = list2.gsub("-","_")
-                  if weight > @kb["minimum_score"]
-                      gravity[lname1] = gravity[lname1] + weight
-                      gravity[lname2] = gravity[lname2] + weight 
-                      linkage["#{lname1} -- #{lname2}"] = weight
-                  end
+              puts "#{pos1}/#{pos2}"
+ 
+              if l1.casecmp(l2) == -1
+                  subcompute(l1,l2,"redhat.com",1, gravity, linkage, "red")
+                  subcompute(l1,l2,"gmail.com",1, gravity, linkage, "green")
+                  subcompute(l1,l2,"googlemail.com",1, gravity, linkage, "green")
+                  subcompute(l1,l2,"fedoraproject.org",1, gravity, linkage, "blue")
+                  subcompute(l1,l2,"jboss.org",1, gravity, linkage, "yellow")
+                  subcompute(l1,l2,"jboss.com",1, gravity, linkage, "yellow")
+                  subcompute(l1,l2,"other",1, gravity, linkage, "magenta")
               end
            end
         end
@@ -73,10 +94,12 @@ class KevinBacon
            outfile.write("#{list} [label=\"#{list} (#{force})\"]\n")
            outfile.write("\n")
         end
-        linkage.each_pair do |combo, force|
+        linkage.each_pair do |combo, attributes|
            (list1,list2) = combo.split("-")
+           (force, color) = attributes.split("-")
+           force = force.to_i()
            outfile.write(combo)
-           outfile.write(" [ weight=#{force * force}, label=\"#{force}\"]\n")
+           outfile.write(" [ weight=#{force * force}, color=\"#{color}\", label=\"#{force}\"]\n")
         end
 
         outfile.write("}\n")

@@ -1,5 +1,5 @@
 ---
-minimum_score: 1
+minimum_score: 3
 explicit_lists: 
     anaconda-devel-list: ['https://www.redhat.com/mailman/listinfo/anaconda-devel-list', '']
     augeas-devel: [ 'https://www.redhat.com/mailman/listinfo/augeas-devel', '' ]
@@ -26,6 +26,7 @@ explicit_lists:
     freeipa-interest: [ 'https://www.redhat.com/mailman/listinfo/freeipa-interest', '' ]
     freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
     func-list: [ 'https://www.redhat.com/mailman/listinfo/func-list', '' ]
+    genome-list: [ 'https://www.redhat.com/mailman/listinfo/genome-list', '' ]
     kickstart-list: [ 'https://www.redhat.com/mailman/listinfo/kickstart-list', '' ]
     libvir-list: [ 'https://www.redhat.com/mailman/listinfo/libvir-list', '' ]
     ovirt-devel: [ 'https://www.redhat.com/mailman/listinfo/ovirt-devel', '' ]
