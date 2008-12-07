@@ -80,7 +80,6 @@ scan_mailmen:
     0
 track_limit: 0.01
 report_months:
-    - 2007-November
     - 2007-December
     - 2008-January
     - 2008-February
