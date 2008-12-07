@@ -22,7 +22,7 @@ class Db
        begin
            ActiveRecord::Schema.define do
                create_table :scans do |table|
-                   table.column :url
+                   table.column :url, :string
                end
                create_table :posts do |table|
                    table.column :url, :string
