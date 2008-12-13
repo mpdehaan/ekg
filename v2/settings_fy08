@@ -80,16 +80,18 @@ scan_mailmen:
     0
 track_limit: 0.01
 report_months:
-    - 2008-March
-    - 2008-April
-    - 2008-May
-    - 2008-June
-    - 2008-July
-    - 2008-August
-    - 2008-September
-    - 2008-October
-    - 2008-November
-    - 2008-December
+    - 2007-March
+    - 2007-April
+    - 2007-May
+    - 2007-June
+    - 2007-July
+    - 2007-August
+    - 2007-September
+    - 2007-October
+    - 2007-November
+    - 2007-December
+    - 2008-January
+    - 2008-February
 colors:
     fedoraproject: 0000FF
     gmail.com: 00FF00
