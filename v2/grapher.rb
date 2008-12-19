@@ -80,7 +80,7 @@ class Grapher
             if (outside_ct > month_ct)
                raise "something wrong here"
             end
-            
+
             inside_data  << inside_ct
             outside_data << outside_ct
             total_data   << month_ct
@@ -99,62 +99,60 @@ class Grapher
 
     def compute_time_dataset2(list,months)
 
-        # return an array of arrays containing the following graphs over time
+      # return an array of arrays containing the following graphs over time
 
-        # total unique posters on list per month in tracked domain A
-        # total unique posters on list per month in tracked domain B (etc)
-        # total unique posters outside of tracked domains
-        
-        inside_data  = []
+      # total unique posters on list per month in tracked domain A
+      # total unique posters on list per month in tracked domain B (etc)
+      # total unique posters outside of tracked domains
 
-        inside_ttl   = 0
+      inside_data  = []
 
-        # puts months
+      inside_ttl   = 0
 
-        domains = @data['colors'].keys().sort()
+      # puts months
 
-        results = {}
+      domains = @data['colors'].keys().sort()
+
+      results = {}
 
 
-        months.each { |month|
-        
-            query = "select distinct from_addr from posts p where list_id = '#{list}' and url like '%/#{month}/%'"
-            total_ct = Post.connection.select_values(query).length()
- 
-            puts "this month: #{month}"
+      months.each { |month|
 
-            color_tags = @data['colors']
+        query = "select distinct from_addr, from_domain from posts p where list_id = '#{list}' and url like '%/#{month}/%'"
+        result = Post.connection.select_rows(query)
+        total_ct = result.length
 
-            tracked = 0
-            color_tags.each_pair do |domain, color|       
 
-                if not results.has_key?(domain)
-                   results[domain] = []
-                end
+        puts "this month: #{month}"
 
-           
-                query = "select distinct from_addr from posts p where list_id = '#{list}' and from_domain = '#{domain}' and url like '%/#{month}/%'"
+        color_tags = @data['colors']
 
-                count   = Post.connection.select_values(query).length()
+        tracked = 0
+        color_tags.each do |domain, color|
+          if not results.has_key?(domain)
+            results[domain] = []
+          end
 
-                results[domain] << count
+          count = result.select do |row| row[1] == domain end.length
 
-                tracked += count
+          results[domain] << count
 
-            end
+          tracked += count
 
-            print "total = #{total_ct}"
-            print "tracked = #{tracked}"
-           
-            untracked = total_ct - tracked
-            print "untracked = #{untracked}"
-            results['other'] = [] if not results.has_key?("other")
-            results['other'] << untracked
-            
 
-        }
+        end
 
-        return results
+        print "total = #{total_ct}"
+        print "tracked = #{tracked}"
+
+        untracked = total_ct - tracked
+        print "untracked = #{untracked}"
+        results['other'] = [] if not results.has_key?("other")
+        results['other'] << untracked
+
+
+      }
+      return results
 
     end
 
