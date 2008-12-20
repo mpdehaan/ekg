@@ -195,9 +195,12 @@ class Grapher
         buckets["other"] = 0
         # go through all the posts and see which domains are the highest
         size = domains.length()
+      counts = Post.connection.select_rows("select from_domain, count(id) from posts where list_id='#{list}' group by from_domain")
+      counts = Hash[*counts.flatten]
         domains.each do |domain|
-            count = Post.connection.select_values("select count(*) from posts where list_id='#{list}' and from_domain='#{domain}'")[0].to_f()
-            ratio = count / posts 
+#             count = Post.connection.select_values("select count(*) from posts where list_id='#{list}' and from_domain='#{domain}'")[0].to_f()
+        count = counts[domain].to_f
+            ratio = count / posts
             puts "#{list} #{domain} #{count} #{ratio}"
             perc = (ratio * 1000).to_i() / 10
             if ratio > @track_limit
