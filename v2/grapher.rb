@@ -397,46 +397,47 @@ class Grapher
 
     # ===================================================================
 
-    def with_each_list(list,f,months)
+    def each_list(list, months)
 
-         begin
-             listurl = @data['explicit_lists'][list][0]
-         rescue
-              return
-         end
+      begin
+        listurl = @data['explicit_lists'][list][0]
+      rescue
+        return
+      end
 
-         posts   = get_post_count_from_list(list)
-         domains = get_domains_from_list(list)     
-         buckets = compute_buckets(list,domains,posts)
-            
-         f.write("<TR>")
-         f.write(get_identity_cell(listurl, list))
-         f.write(get_mix_cell(buckets,list))
-         f.write(get_time_cell(list,months))
-         f.write(get_time_cell2(list,months))
-         f.write("</TR>")
+      posts   = get_post_count_from_list(list)
+      domains = get_domains_from_list(list)
+      buckets = compute_buckets(list,domains,posts)
 
+      primary_table = Array.new
+      primary_table << "<TR>" <<
+        get_identity_cell(listurl, list) <<
+        get_mix_cell(buckets,list) <<
+        get_time_cell(list,months) <<
+        get_time_cell2(list,months) <<
+        "</TR>"
+      primary_table.each do |line| yield line end
     end
 
     # ===================================================================
- 
+
     def run()
-    
+
         # what are all of the lists we want to index?
         lists = get_lists()
-        # what months are we running reports on?      
+        # what months are we running reports on?
         months = compute_months()
 
         # open the output graph and generate a section for each list
-        File.open("graphs.html","w+") { |f|
+        File.open("graphs.html","w+") do |f|
            f.write(File.open("prefix").read())
-           lists.sort().each { |list|  
-              with_each_list(list,f,months) 
-           }
+           lists.sort().each do |list|
+              each_list(list, months) do |x| f.write x end
+           end
            f.write(File.open("postfix").read())
-        }
+        end
 
      end
- 
+
 
 end
