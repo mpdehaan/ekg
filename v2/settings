@@ -79,7 +79,8 @@ limit_months:
 scan_mailmen:
     0
 track_limit: 0.01
-report_months:
+new_fin_year: 2008-March
+report_months: # Must be in cronological order, or else doom! -ynemoy
     - 2008-March
     - 2008-April
     - 2008-May
