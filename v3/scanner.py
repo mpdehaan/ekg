@@ -132,11 +132,15 @@ def update_list(name, mailman_class):
 def main():
     print 'in main'
     config = ConfigObj('settings.ini')
+    print config['lists']
     global CACHE_DIR
     global UPDATE_ALL
     CACHE_DIR = config['cache_dir']
     UPDATE_ALL = config['update_all']
-    update_list('fedora-wiki', mailman.FPMailmain)
+    for list, source in config['lists'].items():
+        mailman_class = mailman.mailman_classes[source]
+        update_list(list, mailman_class)
+#     update_list('fedora-wiki', mailman.FPMailmain)
 #     update_list('cobbler', mailman.FHMailman)
 
 if __name__ == '__main__':

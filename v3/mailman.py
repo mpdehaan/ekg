@@ -14,8 +14,20 @@ from urllib import urlopen, urlretrieve
 from re import compile
 from os.path import join
 
+mailman_classes = dict()
+
+def register_mailman(cls, name):
+    global mailman_classes
+    mailman_classes[name] = cls
+
+
+class MetaMailman(type):
+    def __init__(cls, name, bases, attrs):
+        register_mailman(cls, cls.source)
 
 class Mailman(object):
+    __metaclass__ = MetaMailman
+    source = 'mailman'
     def __init__(self, list):
         self.list = list
 
