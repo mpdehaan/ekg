@@ -42,55 +42,59 @@ def retrieve_mbox(source_url, source):
     url_loc = urlretrieve(url, location)
     print url_loc
 
+def update_email(email):
+    message_id = email['Message-ID']
+    sender = email['From']
+    try:
+        # this should be a unique enough query i think
+        email_obj = session.query(Fact).filter_by(message=message_id,
+                                                  sender=sender,
+                                                  source=source).one()
+    except InvalidRequestError, e:
+        email_obj = Fact(source=source,
+                         message=message_id)
+        email_obj.sender = email['From']
+        # sometimes these fields are blank, which is kinda ok, because it's a garbage message
+        # but dateutil can't handle None, so we have to use this hack
+        email_obj.date = dateutil.parser.parse(email['Date'] or str(datetime.datetime.min))
+        email_obj.subject = email['Subject']
+    session.save_or_update(email_obj)
+
 def update_mbox(source):
-    print 'updating mbox ', source
-    print source.archive
-    print source
     with util.pwd(CACHE_DIR):
         mbox = read_gzip_mbox(source.archive)
-    for email in mbox:
-        message_id = email['Message-ID']
-        sender = email['From']
-        try:
-            # this should be a unique enough query i think
-            email_obj = session.query(Fact).filter_by(message=message_id,
-                                                      sender=sender,
-                                                      source=source).one()
-        except InvalidRequestError, e:
-            email_obj = Fact(source=source,
-                             message=email['Message-ID'])
-            email_obj.sender = email['From']
-            # sometimes these fields are blank, which is kinda ok, because it's a garbage message
-            # but dateutil can't handle None, so we have to use this hack
-            email_obj.date = dateutil.parser.parse(email['Date'] or str(datetime.datetime.min))
-            email_obj.subject = email['Subject']
-        session.save_or_update(email_obj)
-    session.commit()
+    with session.begin():
+        for email in mbox:
+            update_email(email)
     return mbox
+
+def load_mbox(mbox):
+    if type(mb['size']) is str:
+        mb['size'] = int(mb['size'])
+    try:
+        source = session.query(Source).filter_by(cache_file=mb['mbox'],
+                                                 source=mm.source,
+                                                 list=mm.list).one()
+        print 'source prexisting'
+    except InvalidRequestError, e:
+        source = Source(source=mm.source,
+                        list=mm.list,
+                        cache_file=mb['mbox'],
+                        month=mb['month'],
+                        size=0)
+        print 'new source'
+        session.save(source)
+    return source
+    
 
 def load_mboxes(mm):
     mb_lists = mm.mbox_lists()
     print mb_lists
-    for mb in mb_lists:
-        print mb
-        mb['source_url'] = mm.mbox(mb['mbox'])
-        if type(mb['size']) is str:
-            mb['size'] = int(mb['size'])
-        try:
-            source = session.query(Source).filter_by(cache_file=mb['mbox'],
-                                                     source=mm.source,
-                                                     list=mm.list).one()
-            print 'source prexisting'
-        except InvalidRequestError, e:
-            source = Source(source=mm.source,
-                            list=mm.list,
-                            cache_file=mb['mbox'],
-                            month=mb['month'],
-                            size=0)
-            print 'new source'
-            session.save(source)
-        yield (source, mb)
-    session.commit()
+    with session.begin():
+        for mb in mb_lists:
+            print mb
+            mb['source_url'] = mm.mbox(mb['mbox'])
+            yield load_mbox(mb), mb
 
 def lists_to_update(mboxes):
     for source, mbox in mboxes:
