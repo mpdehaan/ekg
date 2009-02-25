@@ -73,3 +73,18 @@ class FHMailman(Mailman):
 
     def mbox(self, month):
         return self.archive + month
+
+class FPMailmain(Mailman):
+    regex = compile(r"""<td>(?P<month>\w*?) (?P<year>\d{4}):</td>.*?<A href="(?P<mbox>(?P=year)-(?P=month).txt.gz)".*?text (?P<size>\d.*?)KB""", re.I | re.S)
+    source = 'fedoraproject'
+
+    @property
+    def archive(self):
+        return 'http://lists.fedoraproject.org/pipermail/%s/' % self.list
+
+    @property
+    def listinfo(self):
+        return 'https://admin.fedoraproject.org/mailman/listinfo/%s' % self.list
+
+    def mbox(self, month):
+        return self.archive + month
