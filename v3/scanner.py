@@ -10,6 +10,8 @@
 
 import gzip
 import mailbox
+import datetime
+import dateutil.parser
 
 from sqlalchemy.exceptions import InvalidRequestError
 
@@ -29,7 +31,6 @@ def read_gzip_mbox(path):
     f_out = open(path_out, 'wb')
     f_out.writelines(f_in)
     f_out.close()
-    print path_out
     return mailbox.mbox(path_out)
 
 def retrieve_mbox(mm, mbox):
@@ -39,7 +40,22 @@ def retrieve_mbox(mm, mbox):
     print url_loc
 
 def update_mbox(location):
-    return read_gzip_mbox(location)
+    print location
+    mbox = read_gzip_mbox(location)
+    for email in mbox:
+        message_id = email['Message-ID']
+        sender = email['From']
+        try:
+            email_obj = session.query(Email).filter_by(message=message_id, sender=sender).one()
+        except InvalidRequestError, e:
+            email_obj = Email(list='cobbler',
+                              message=email['Message-ID'])
+            email_obj.sender = email['From']
+            email_obj.date = dateutil.parser.parse(email['Date'] or str(datetime.datetime.min))
+            email_obj.subject = email['Subject']
+        session.save_or_update(email_obj)
+    session.commit()
+    return mbox
 
 def main():
     print 'in main'

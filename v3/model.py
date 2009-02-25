@@ -25,10 +25,10 @@ Base = declarative_base(metadata=metadata)
 
 class MBox(Base):
     __tablename__ = 'mboxes'
-    id = Column('id', Integer, primary_key=True)
-    list = Column('list', Text)
-    mbox = Column('mbox', Text)
-    size = Column('size', Integer)
+    id    = Column('id', Integer, primary_key=True)
+    list  = Column('list', Text)
+    mbox  = Column('mbox', Text)
+    size  = Column('size', Integer)
     month = Column('month', Text)
 
     @property
@@ -37,15 +37,14 @@ class MBox(Base):
 
 class Email(Base):
     __tablename__ = 'emails'
-    id = Column('id', Integer, primary_key=True)
-    sender = Column('sender', Text)
-    list = Column('list', Text)
-    message = Column('message_id', Text)
-    list_received_time = Column('list_received_time', DateTime)
+    id      = Column('id', Integer, primary_key=True)
+    sender  = Column('sender', Text)
+    list    = Column('list', Text)
+    message = Column('message_id', Text, index=True)
+    date    = Column('date', DateTime)
     subject = Column('subject', Text)
 
 metadata.create_all(engine)
 session = Session()
 
-Email = None
 __all__ = ['MBox', 'Email', 'session', 'Session', 'metadata', 'engine']
