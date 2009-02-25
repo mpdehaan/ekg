@@ -38,7 +38,7 @@ class MBox(Base):
 class Email(Base):
     __tablename__ = 'emails'
     id      = Column('id', Integer, primary_key=True)
-    sender  = Column('sender', Text)
+    sender  = Column('sender', Text, index=True)
     list    = Column('list', Text)
     message = Column('message_id', Text, index=True)
     date    = Column('date', DateTime)
