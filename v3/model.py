@@ -30,6 +30,7 @@ class Source(Base):
     source  = Column('source', Text, index=True)
     list    = Column('list', Text, index=True)
     cache_file    = Column('cache_file', Text)
+    cache_url = Column('cache_url', Text)
     size    = Column('size', Integer)
     month   = Column('month', Text)
 

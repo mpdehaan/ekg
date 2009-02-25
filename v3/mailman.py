@@ -23,7 +23,14 @@ class Mailman(object):
         site = self.archive
         html = urlopen(site).read()
         matches = self.regex.finditer(html)
-        return [match.groupdict() for match in matches]
+        match_dicts = [match.groupdict() for match in matches]
+        for match_dict in match_dicts:
+            match_dict['mbox_url'] = self.mbox(match_dict['mbox'])
+            match_dict['list'] = self.list
+            match_dict['source'] = self.source
+            if type(match_dict['size']) is str:
+                match_dict['size'] = int(match_dict['size'])
+        return match_dicts
 
     @property
     def archive(self):

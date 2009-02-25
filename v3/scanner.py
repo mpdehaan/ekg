@@ -19,7 +19,7 @@ from sqlalchemy.exceptions import InvalidRequestError
 from configobj import ConfigObj
 from urllib import urlopen, urlretrieve
 from os.path import join
-from os import mkdir
+from os import makedirs
 
 import mailman
 import util
@@ -36,13 +36,15 @@ def read_gzip_mbox(path):
     f_out.close()
     return mailbox.mbox(path_out)
 
-def retrieve_mbox(source_url, source):
-    url = source_url
+def retrieve_mbox(mbox_url, source):
+    print 'retrieve mbox'
+    print source.archive
+    print mbox_url
     location = source.archive
-    url_loc = urlretrieve(url, location)
+    url_loc = urlretrieve(mbox_url, location)
     print url_loc
 
-def update_email(email):
+def update_email(email, source):
     message_id = email['Message-ID']
     sender = email['From']
     try:
@@ -65,22 +67,24 @@ def update_mbox(source):
         mbox = read_gzip_mbox(source.archive)
     with session.begin():
         for email in mbox:
-            update_email(email)
+            update_email(email, source)
     return mbox
 
 def load_mbox(mbox):
-    if type(mb['size']) is str:
-        mb['size'] = int(mb['size'])
+    print mbox
     try:
-        source = session.query(Source).filter_by(cache_file=mb['mbox'],
-                                                 source=mm.source,
-                                                 list=mm.list).one()
+        source = session.query(Source)\
+            .filter_by(cache_file=mbox['mbox'],
+                       source=mbox['source'],
+                       list=mbox['list'])\
+            .one()
         print 'source prexisting'
     except InvalidRequestError, e:
-        source = Source(source=mm.source,
-                        list=mm.list,
-                        cache_file=mb['mbox'],
-                        month=mb['month'],
+        source = Source(source=mbox['source'],
+                        list=mbox['list'],
+                        cache_file=mbox['mbox'],
+                        cache_url=mbox['mbox_url'],
+                        month=mbox['month'],
                         size=0)
         print 'new source'
         session.save(source)
@@ -93,7 +97,6 @@ def load_mboxes(mm):
     with session.begin():
         for mb in mb_lists:
             print mb
-            mb['source_url'] = mm.mbox(mb['mbox'])
             yield load_mbox(mb), mb
 
 def lists_to_update(mboxes):
@@ -105,7 +108,7 @@ def lists_to_update(mboxes):
 
 def needs_update(source, mbox):
     if not source.size == mbox['size'] or UPDATE_ALL:
-        retrieve_mbox(mbox['source_url'], source)
+        retrieve_mbox(mbox['mbox_url'], source)
         source.size = mbox['size']
         return True
     return False
@@ -115,7 +118,7 @@ def update_list(name, mailman_class):
     mm = mailman_class(name)
     with util.pwd(CACHE_DIR):
         try:
-            mkdir(mm.cache)
+            makedirs(mm.cache)
         except OSError, e:
             print e
         mb_list = load_mboxes(mm)
@@ -128,7 +131,13 @@ def update_list(name, mailman_class):
 
 def main():
     print 'in main'
-    update_list('cobbler', mailman.FHMailman)
+    config = ConfigObj('settings.ini')
+    global CACHE_DIR
+    global UPDATE_ALL
+    CACHE_DIR = config['cache_dir']
+    UPDATE_ALL = config['update_all']
+    update_list('fedora-wiki', mailman.FPMailmain)
+#     update_list('cobbler', mailman.FHMailman)
 
 if __name__ == '__main__':
     main()
