@@ -7,6 +7,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+from __future__ import with_statement
 
 import gzip
 import mailbox
@@ -21,9 +22,11 @@ from os.path import join
 from os import mkdir
 
 import mailman
+import util
 from model import *
 
-UPDATE_ALL = False
+UPDATE_ALL = True
+CACHE_DIR = '.'
 
 def read_gzip_mbox(path):
     f_in = gzip.open(path, 'rb')
@@ -33,61 +36,95 @@ def read_gzip_mbox(path):
     f_out.close()
     return mailbox.mbox(path_out)
 
-def retrieve_mbox(mm, mbox):
-    url = mm.mbox(mbox.mbox)
-    location = mbox.archive
+def retrieve_mbox(source_url, source):
+    url = source_url
+    location = source.archive
     url_loc = urlretrieve(url, location)
     print url_loc
 
-def update_mbox(location):
-    print location
-    mbox = read_gzip_mbox(location)
+def update_mbox(source):
+    print 'updating mbox ', source
+    print source.archive
+    print source
+    with util.pwd(CACHE_DIR):
+        mbox = read_gzip_mbox(source.archive)
     for email in mbox:
         message_id = email['Message-ID']
         sender = email['From']
         try:
-            email_obj = session.query(Email).filter_by(message=message_id, sender=sender).one()
+            # this should be a unique enough query i think
+            email_obj = session.query(Fact).filter_by(message=message_id,
+                                                      sender=sender,
+                                                      source=source).one()
         except InvalidRequestError, e:
-            email_obj = Email(list='cobbler',
-                              message=email['Message-ID'])
+            email_obj = Fact(source=source,
+                             message=email['Message-ID'])
             email_obj.sender = email['From']
+            # sometimes these fields are blank, which is kinda ok, because it's a garbage message
+            # but dateutil can't handle None, so we have to use this hack
             email_obj.date = dateutil.parser.parse(email['Date'] or str(datetime.datetime.min))
             email_obj.subject = email['Subject']
         session.save_or_update(email_obj)
     session.commit()
     return mbox
 
-def main():
-    print 'in main'
-#     mm = mailman.RHMailman('fedora-devel-list')
-    mm = mailman.FHMailman('cobbler')
+def load_mboxes(mm):
     mb_lists = mm.mbox_lists()
-    to_update = list()
     print mb_lists
-    try:
-        mkdir('cobbler')
-    except OSError, e:
-        print e
     for mb in mb_lists:
+        print mb
+        mb['source_url'] = mm.mbox(mb['mbox'])
         if type(mb['size']) is str:
             mb['size'] = int(mb['size'])
         try:
-            mbox = session.query(MBox).filter_by(mbox = mb['mbox'], 
-                                                 list='cobbler').one()
+            source = session.query(Source).filter_by(cache_file=mb['mbox'],
+                                                     source=mm.source,
+                                                     list=mm.list).one()
+            print 'source prexisting'
         except InvalidRequestError, e:
-            mbox = MBox(list='cobbler', 
-                        mbox=mb['mbox'], 
-                        month=mb['month'], 
-                        size=0)
-            session.save(mbox)
-        if not mbox.size == mb['size'] or UPDATE_ALL:
-            retrieve_mbox(mm, mbox)
-            mbox.size = mb['size']
-        to_update.append(mbox)
+            source = Source(source=mm.source,
+                            list=mm.list,
+                            cache_file=mb['mbox'],
+                            month=mb['month'],
+                            size=0)
+            print 'new source'
+            session.save(source)
+        yield (source, mb)
     session.commit()
-    print to_update
-    for mbox in to_update:
-        print update_mbox(mbox.archive)
+
+def lists_to_update(mboxes):
+    for source, mbox in mboxes:
+        print 'checking for updates'
+        print source, mbox
+        if needs_update(source, mbox):
+            yield source
+
+def needs_update(source, mbox):
+    if not source.size == mbox['size'] or UPDATE_ALL:
+        retrieve_mbox(mbox['source_url'], source)
+        source.size = mbox['size']
+        return True
+    return False
+
+
+def update_list(name, mailman_class):
+    mm = mailman_class(name)
+    with util.pwd(CACHE_DIR):
+        try:
+            mkdir(mm.cache)
+        except OSError, e:
+            print e
+        mb_list = load_mboxes(mm)
+        to_update = lists_to_update(mb_list)
+        for mbox in to_update:
+            print 'updating mbox in main ', mbox
+            print update_mbox(mbox)
+    session.commit()
+
+
+def main():
+    print 'in main'
+    update_list('cobbler', mailman.FHMailman)
 
 if __name__ == '__main__':
     main()

@@ -14,7 +14,8 @@ import sqlalchemy
 
 from sqlalchemy import create_engine, Table, MetaData, Table, Column,\
     Integer, Text, DateTime
-from sqlalchemy.orm import mapper, sessionmaker, scoped_session
+from sqlalchemy.orm import mapper, sessionmaker, scoped_session, relation
+from sqlalchemy.schema import ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -23,28 +24,32 @@ metadata = MetaData()
 Session = scoped_session(sessionmaker(transactional=True, autoflush=False, bind=engine))
 Base = declarative_base(metadata=metadata)
 
-class MBox(Base):
-    __tablename__ = 'mboxes'
-    id    = Column('id', Integer, primary_key=True)
-    list  = Column('list', Text)
-    mbox  = Column('mbox', Text)
-    size  = Column('size', Integer)
-    month = Column('month', Text)
+class Source(Base):
+    __tablename__ = 'sources'
+    id      = Column('id', Integer, primary_key=True)
+    source  = Column('source', Text, index=True)
+    list    = Column('list', Text, index=True)
+    cache_file    = Column('cache_file', Text)
+    size    = Column('size', Integer)
+    month   = Column('month', Text)
 
     @property
     def archive(self):
-        return join(self.list, self.mbox)
+        return join(self.source, self.list, self.cache_file)
 
-class Email(Base):
-    __tablename__ = 'emails'
+class Fact(Base):
+    __tablename__ = 'facts'
     id      = Column('id', Integer, primary_key=True)
     sender  = Column('sender', Text, index=True)
-    list    = Column('list', Text)
     message = Column('message_id', Text, index=True)
     date    = Column('date', DateTime)
     subject = Column('subject', Text)
+    source_id = Column('source_id', Integer,
+                       ForeignKey('sources.id'), index=True)
+    source = relation(Source, primaryjoin=source_id==Source.id,
+                      backref='facts')
 
 metadata.create_all(engine)
 session = Session()
 
-__all__ = ['MBox', 'Email', 'session', 'Session', 'metadata', 'engine']
+__all__ = ['Source', 'Fact', 'session', 'Session', 'metadata', 'engine']
