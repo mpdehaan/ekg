@@ -79,7 +79,7 @@ class RHMailman(Mailman):
 
 
 class FHMailman(Mailman):
-    regex = compile(r"""<td>(?P<month>\w*?) (?P<year>\d{4}):</td>.*?<A href="(?P<mbox>(?P=year)-(?P=month).txt.gz)".*?text (?P<size>\d.*?)KB""", re.I | re.S)
+    regex = compile(r"""<td>(?P<month>\w*?) (?P<year>\d{4}):</td>.*?<A href="(?P<mbox>(?P=year)-(?P=month).txt.gz)".*?text (?P<size>\d.*?) (KB|bytes)""", re.I | re.S)
     source = 'fedorahosted'
 
     @property
