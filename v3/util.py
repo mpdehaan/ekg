@@ -21,3 +21,8 @@ def pwd(dir):
     print 'changing dir to %s' % old_dir
     chdir(old_dir)
 
+def iter_in_transaction(session, iter):
+    with session.begin():
+        for item in iter:
+            yield item
+    
