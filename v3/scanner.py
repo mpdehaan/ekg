@@ -21,7 +21,6 @@ from urllib import urlopen, urlretrieve
 from os.path import join
 from os import makedirs
 
-import mailman
 import util
 from model import *
 
@@ -115,7 +114,7 @@ def needs_update(source, mbox):
 
 
 def update_list(name, mailman_class):
-    mm = mailman_class(name)
+    mm = mailman_class(name=name)
     with util.pwd(CACHE_DIR):
         try:
             makedirs(mm.cache)
@@ -131,6 +130,7 @@ def update_list(name, mailman_class):
 
 def main():
     print 'in main'
+    metadata.create_all(engine)
     config = ConfigObj('settings.ini')
     print config['lists']
     global CACHE_DIR
@@ -138,7 +138,7 @@ def main():
     CACHE_DIR = config['cache_dir']
     UPDATE_ALL = config['update_all']
     for list, source in config['lists'].items():
-        mailman_class = mailman.mailman_classes[source]
+        mailman_class = stream_classes[source]
         update_list(list, mailman_class)
 #     update_list('fedora-wiki', mailman.FPMailmain)
 #     update_list('cobbler', mailman.FHMailman)
