@@ -88,6 +88,7 @@ class SqlBase(object):
     __metaclass__ = MetaSqlBase
     @classmethod
     def create_or_update(cls, **keys):
+        print keys
         try:
             sql_obj = session.query(cls)\
                 .filter_by(**cls._unique_remote(keys))\
@@ -125,8 +126,6 @@ class Stream(SqlBase, Base):
 
     def outofdate_sources_iter(self, remotes):
         for remote in iter_in_transaction(session, remotes):
-            remote['stream'] = self
-            remote['identifier'] = remote['mbox']
             source_obj = Source.create_or_update(**remote)
             if source_obj.needs_update(remote):
                 yield source_obj, remote
@@ -156,6 +155,15 @@ class Mailman(Stream):
     # should it be mailmans or mailmen?
     __tablename__ = 'mailmen'
     id = Column('id', Integer, ForeignKey('streams.id'), primary_key=True)
+#     id      = Column('id', Integer, primary_key=True)
+#     cache_file    = Column('cache_file', Text)
+#     cache_url = Column('cache_url', Text)
+#     size    = Column('size', Integer)
+#     identifier   = unique(Column('identifier', Text))
+#     stream_id = Column('stream_id', Integer,
+#                        ForeignKey('streams.id'), index=True, unique=True)
+#     stream = unique(relation(Stream, primaryjoin=stream_id==Stream.id,
+#                              backref='sources'))
 
     def remote_iter(self):
         site = self.archive
@@ -163,7 +171,10 @@ class Mailman(Stream):
         matches = self.regex.finditer(html)
         match_dicts = (match.groupdict() for match in matches)
         for match_dict in match_dicts:
-            match_dict['url'] = self.url(match_dict['mbox'])
+            match_dict['cache_url'] = self.url(match_dict['mbox'])
+            match_dict['cache_file'] = match_dict['mbox']
+            match_dict['identifier'] = match_dict['mbox']
+            match_dict['stream'] = self
             if type(match_dict['size']) is str:
                 match_dict['size'] = int(match_dict['size'])
             yield match_dict
@@ -245,17 +256,14 @@ class Source(SqlBase, Base):
     __metaclass__ = MetaObject
     __tablename__ = 'sources'
     id      = Column('id', Integer, primary_key=True)
-#     source  = Column('source', Text, index=True)
-#     list    = Column('list', Text, index=True)
     cache_file    = Column('cache_file', Text)
     cache_url = Column('cache_url', Text)
     size    = Column('size', Integer)
-    identifier   = Column('identifier', Text)
+    identifier   = unique(Column('identifier', Text))
     stream_id = Column('stream_id', Integer,
                        ForeignKey('streams.id'), index=True, unique=True)
-    stream = relation(Stream, primaryjoin=stream_id==Stream.id,
-                      backref='sources')
-    __table_args__ = (UniqueConstraint('stream_id', 'identifier'),{})
+    stream = unique(relation(Stream, primaryjoin=stream_id==Stream.id,
+                             backref='sources'))
 
     def needs_update(self, remote):
         return not self.size == remote['size'] or UPDATE_ALL
