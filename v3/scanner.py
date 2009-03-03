@@ -22,23 +22,26 @@ from os.path import join
 from os import makedirs
 
 import util
+import model
 from model import *
 
 UPDATE_ALL = True
 CACHE_DIR = '.'
 
 def main():
-    print 'in main'
     metadata.create_all(engine)
     config = ConfigObj('settings.ini')
-    print config['lists']
     global CACHE_DIR
     global UPDATE_ALL
     CACHE_DIR = config['cache_dir']
     UPDATE_ALL = config['update_all']
+    model.UPDATE_ALL = UPDATE_ALL
+    model.CACHE_DIR = CACHE_DIR
     for list, source in config['lists'].items():
-        mailman_class = stream_classes[source]
-        update_list(list, mailman_class)
+        StreamClass = stream_classes[source]
+        stream = StreamClass.create_or_update(name=list)
+        stream.refresh_sources_list()
+#         update_list(list, mailman_class)
 #     update_list('fedora-wiki', mailman.FPMailmain)
 #     update_list('cobbler', mailman.FHMailman)
 
