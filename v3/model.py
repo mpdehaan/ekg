@@ -18,6 +18,7 @@ from os import makedirs
 from os.path import join
 
 import sqlalchemy
+import sqlalchemy.orm.attributes
 
 from sqlalchemy import create_engine, Table, MetaData, Table, Column,\
     Integer, Text, DateTime
@@ -46,14 +47,18 @@ def unique(item):
 def sql_attribute(item):
     item._sql_attribute = True
     return item
-    
+
 # has to be subclassed from type(Base) because it has to be a direct child
 class MetaSqlBase(type):
     def __init__(cls, name, bases, attrs):
         sql_attrs = dict()
         unique_sql_attrs = dict()
         for attr in dir(cls):
+#             print attr
+#             print getattr(cls, attr).__class__
             if isinstance(getattr(cls, attr), Column) \
+                    or isinstance(getattr(cls, attr),
+                                  sqlalchemy.orm.attributes.InstrumentedAttribute) \
                     or getattr(getattr(cls, attr), "_sql_attribute", False):
                 sql_attrs[attr] = True
         for attr in sql_attrs.iterkeys():
@@ -64,7 +69,7 @@ class MetaSqlBase(type):
         if not hasattr(cls, '__mapper_args__'):
             cls.__mapper_args__ = dict()
         cls.__mapper_args__['polymorphic_identity'] = name.lower()
-        super(MetaSqlBase, cls).__init__(name, bases, attrs)
+        type.__init__(cls, name, bases, attrs)
 
     def _clear_inv_keys_func(self, v_keys):
         def clear_inv_keys(remote):
@@ -77,7 +82,7 @@ class MetaSqlBase(type):
             print v_remote
             return v_remote
         return staticmethod(clear_inv_keys)
-            
+
 
 class SqlBase(object):
     __metaclass__ = MetaSqlBase
@@ -93,6 +98,9 @@ class SqlBase(object):
         return sql_obj
 
 class MetaObject(MetaSqlBase, type(Base)):
+    def __init__(cls, names, bases, attrs):
+        type(Base).__init__(cls, names, bases, attrs)
+        MetaSqlBase.__init__(cls, names, bases, attrs)
     pass
 
 # has to be subclassed from type(SqlBase) because it has to be a direct child
@@ -100,7 +108,8 @@ class MetaStream(type(Base), MetaSqlBase):
     def __init__(cls, name, bases, attrs):
         source = name.lower()
         cls.source = source
-        super(MetaStream, cls).__init__(name, bases, attrs)
+        type(Base).__init__(cls, name, bases, attrs)
+        MetaSqlBase.__init__(cls, name, bases, attrs)
         register_stream(cls, source)
 
 
@@ -134,7 +143,7 @@ class Stream(SqlBase, Base):
             for source, remote in \
                     iter_in_transaction(session, self.outofdate_sources_iter(remotes)):
                 source.update(remote)
-    
+
     def load_remote_list(self):
         raise NotImplementedError
 
@@ -159,7 +168,6 @@ class Mailman(Stream):
                 match_dict['size'] = int(match_dict['size'])
             yield match_dict
 
-        
     @property
     def archive(self):
         raise NotImplementedError
