@@ -31,33 +31,15 @@ class Scanner
       @year = @start_time.year
       @year_month = "#{@year}-#{@month}"
       @limit_months = @data["limit_months"]
-      @scan_mailmen = @data["scan_mailmen"]
    end
 
    def run()
       # main entry point
       # check mailmen to build up the lists of lists to scan
       # the scan lists explicitly listed in the config file, if any
-      scan_mailmen() if @scan_mailmen ==1
       scan_lists()
    end
    
-   def scan_mailmen()
-      # find all the listinfo pages by reading the mailman page 
-      @mailmen.each { |mailman, mailman_config| 
-         mailman_url, mailman_type = mailman_config
-         puts "#{mailman} mailman: #{mailman_url}"
-         doc = Hpricot(URI.parse(mailman_url).read())
-         doc.search("a") { |link| 
-            new_url = link.attributes["href"]
-            if new_url.include?("mailman/listinfo")
-               listname = new_url.split("/").slice(-1)
-               @lists[listname] = [new_url, mailman_type]
-            end
-         } 
-      }
-   end
-
    def scan_lists()
       # for each list we know we need to index, find the archives URL
       # and then request scanning of the archives
@@ -83,7 +65,7 @@ class Scanner
    def scan_archives(list,url,list_count,lists_size,hits)
       # read a mailing archives page to find the threads listed on that page
       mon_count = 1
-      puts "#{list} threads: #{url}"
+      puts "#{list} archives page is: #{url}"
       begin
           doc = Hpricot(URI.parse(url).read())
       rescue OpenURI::HTTPError
@@ -124,10 +106,10 @@ class Scanner
 
    def scan_threads(list,url,list_count,lists_size,mon_count,hits)
       # read a given month's archives page to find the messages within
-
+    
       count = 0
       top = url.split("/").slice(0..-2).join("/") # FIXME
-      puts "scanning: (thread) #{url}"
+      puts "scanning threads page: #{url}"
       begin
           doc = Hpricot(URI.parse(url).read())
       rescue OpenURI::HTTPError
@@ -137,23 +119,31 @@ class Scanner
 
       Post.transaction do
           doc.search("a") do |link|
-              if link.attributes.has_key?("href")
-                  new_url = link.attributes["href"]
-                  unless new_url.grep(/https:|http:|txt.gz|index.html|thread.html|date.html|author.html/).length() > 0
-                      new_url = "#{top}/#{new_url}"
+              if link.attributes.has_key?("HREF") or link.attributes.has_key?("href")
+                  new_url = link.attributes["HREF"]
+                  if new_url.nil?
+                     new_url = link.attributes["href"]
+                  end
+                  # puts "considering URL = #{new_url}"
+                  if new_url =~ /\.html$/ and new_url !~ /\.\.|thread\.html|date\.html|author\.html/
+                      unless new_url =~ /^http/
+                         new_url = "#{top}/#{new_url}"
+                      end
                       count = count + 1 
                       if (count % 20 == 0)
                          puts "#{list} (list #{list_count}/#{lists_size} month #{mon_count}/#{@limit_months}) post #{count}"
                       end
+                      # puts "here is a thread URL: #{link.inner_html}"
                       scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
                   end
               end
           end
       end
+
    end
 
    def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count)
-
+      # puts msg_url
       begin
           doc = Hpricot(URI.parse(msg_url).read())
       rescue OpenURI::HTTPError
@@ -183,26 +173,33 @@ class Scanner
       end
 
       if from_domain.nil?
-          doc.search("a") { |link| 
-              # at least for fedorahosted
-              # if the href contains listinfo and the contents of the href contain "at" 
-              # then the inner_html is the from address
-              if link.attributes["href"] =~ /listinfo|mailto/
-                  tokens = link.inner_html.split()
-                  if tokens.length == 3 and tokens[1] == "at" and tokens[2] =~ /\./
-                      if link.inner_html =~ /do-not-reply/
-                          from_addr = "other@do-not-reply"
-                          from_domain = "do-not-reply"
-                          break
-                      else
-                          from_addr = "#{tokens[0]}@#{tokens[2]}"
-                          from_domain = tokens[2]
-                          break
-                      end
-                  end
+          # puts "looking for domain"
+          doc.search("link") { |link| 
+              # FIXME: @redhat.com specific
+              # puts "link=#{link}" 
+              if link.attributes["HREF"] =~ /listinfo|mailto/
+                  tokens = link.attributes["HREF"].split(":")
+                  from_addr = tokens[1]
+                  from_domain = tokens[1].split("@")[-1]
+                  break
               end
           }
       end
+
+      if from_domain.nil?
+          # looks like Fedora Hosted then
+          doc.search("a") { |link|
+              if link.attributes["HREF"] =~ /lists\.fedorahosted\.org/
+                  tokens = link.inner_html.split(" at ")
+                  if tokens.length == 3 and tokens[1] == "at"
+                     from_addr = "#{tokens[0]}@#{tokens[2]}"
+                     from_domain = tokens[2] 
+                     break
+                  end
+              end 
+          }
+      end
+
 
       doc.search("i") { |italics|
           # fedora hosted UTC date is in italics towards the top of the message
@@ -211,22 +208,13 @@ class Scanner
              break
           end
       }
-      if from_addr.nil?
-          doc.search("link") { |link|
-              # redhat.com uses a LINK tag for the from address
-              # with "@" just left as "@"
-              if link.attributes["rev"] == "made"
-                 from_addr = link.attributes["href"].sub("mailto:","")
-                 from_domain = from_addr.split("@").slice(1)
-              end
-          }
-      end
       if sent_date.nil?
           doc.search("li") { |li|
               # redhat.com uses a <em>Date:</em>: string
               # which is in local time with offset
               if li.inner_html =~ /<em>Date/
                   sent_date = li.inner_html.sub("<em>Date</em>:","").strip()
+                  break
               end
           }
       end   
@@ -235,6 +223,7 @@ class Scanner
               # jboss lists have other date data, fun!
               if it.inner_html =~ /(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/
                   sent_date = it.inner_html
+                  break
               end
           }
       end
@@ -251,12 +240,17 @@ class Scanner
           puts "date fail! #{sent_date}"
       end
 
+      raise "error, bad from_domain: #{from_domain}" if from_domain.nil?
+
       if (ok == 1)
-          begin
-              insert_record(msg_url,subject,list,from_domain,from_addr,sent_date)
-          rescue
-              puts "insert fail: url=(#{msg_url}) subject=(#{subject}) list=(#{list}) domain=(#{from_domain}) from_addr=(#{from_addr}) sent_date=(#{sent_date})"
-          end
+          #begin
+          #puts "sent_date is #{sent_date}"
+          #puts "list is #{list}"
+          #puts "subject is #{subject}"
+          insert_record(msg_url,subject,list,from_domain,from_addr,sent_date)
+          #rescue
+          #    puts "insert fail: url=(#{msg_url}) subject=(#{subject}) list=(#{list}) domain=(#{from_domain}) from_addr=(#{from_addr}) sent_date=(#{sent_date})"
+          #end
       end
 
    end

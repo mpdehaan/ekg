@@ -1,16 +1,12 @@
-Authors and Contributors:
-
-Version 1 (Perl)
-
-  Greg DeKoenigsberg <gdk@redhat.com>
-
-Version 2 (Ruby)
- 
+Written and maintained by:
+  
   Michael DeHaan <mdehaan@redhat.com>
+
+Contributions from:
+
+  Greg DeKoenigsberg <gdk@redhat.com> -- version 1, from which this was based
   Yaakov Nemoy <loupgaroublond@gmail.com>
   Max Spevack <mspevack@redhat.com>
   Steve Milner <steve@gnulinux.net>
-
-  ... send in a patch to get your name here ...
 
 

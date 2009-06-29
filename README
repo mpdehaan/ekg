@@ -1,10 +1,31 @@
 README
 
-EKG is a set of tools to determine metrics on OSS community health.
-EKG is licensed GPLv2+, read the license in "COPYING".
-Read the list of contributors in "AUTHORS".
+EKG is a mailing list scanner, which has had several different
+codebases.  This is my version, based on GDK's original version.
 
 Wiki:  http://fedorahosted.org/ekg
 Mailing list:  https://fedorahosted.org/mailman/listinfo/ekg
+
+INSTALL
+
+You will need ruby and some libraries.  For Fedora 11:
+
+# yum install ruby ruby-devel ruby-activerecord ruby-hpricot ruby-sqlite3
+
+(Do not use mix yum and gem install, you are likely to get incompatible bits!)
+
+RUN
+
+# vi settings
+# ruby ekg.rb --scan
+# ruby ekg.rb --graph  
+
+SCAN
+
+--scan produces a sqlite database
+
+VIEW
+
+look at the HTML file --graph produces
 
 

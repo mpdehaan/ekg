@@ -1,3 +1,0 @@
-* Convert mailman to abstract base class
-* Decide where settings.ini should go, and what load order should be used
-* Explore validators for using **Keys as arguments to various SA object based things

@@ -1,0 +1,34 @@
+---
+all_your_base_owner: us
+mailmen: []
+explicit_lists: 
+    cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
+    freeipa-devel: [ 'https://www.redhat.com/mailman/listinfo/freeipa-devel', '' ]
+    freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
+    func-list: [ 'https://www.redhat.com/mailman/listinfo/func-list', '' ]
+    kickstart-list: [ 'https://www.redhat.com/mailman/listinfo/kickstart-list', '' ]
+    rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
+    spacewalk-devel: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-devel', '']
+    spacewalk-list: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-list', '' ]
+limit_months:
+    12
+track_limit: 0.01
+report_months: # Must be in cronological order, controls what's on the graph
+    - 2008-July
+    - 2008-August
+    - 2008-September
+    - 2008-October
+    - 2008-November
+    - 2008-December
+    - 2009-January
+    - 2009-February
+    - 2009-March
+    - 2009-April
+    - 2009-May
+    - 2009-June
+colors:
+    fedoraproject: 0000FF
+    gmail.com: 00FF00
+    googlemail.com: 00FF00
+    jboss: FFFF00
+    redhat.com: FF0000
