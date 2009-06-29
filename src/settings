@@ -4,13 +4,13 @@ mailmen: []
 explicit_lists: 
     cobbler: [ 'https://fedorahosted.org/mailman/listinfo/cobbler', 'pipermail', '' ]
     cobbler-devel: [ 'https://fedorahosted.org/mailman/listinfo/cobbler-devel', 'pipermail', '' ]
-#    freeipa-devel: [ 'https://www.redhat.com/mailman/listinfo/freeipa-devel', '' ]
-#    freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
-#    func-list: [ 'https://www.redhat.com/mailman/listinfo/func-list', '' ]
-#    kickstart-list: [ 'https://www.redhat.com/mailman/listinfo/kickstart-list', '' ]
-#    rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
-#    spacewalk-devel: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-devel', '']
-#    spacewalk-list: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-list', '' ]
+    freeipa-devel: [ 'https://www.redhat.com/mailman/listinfo/freeipa-devel', '' ]
+    freeipa-users: [ 'https://www.redhat.com/mailman/listinfo/freeipa-users', '' ]
+    func-list: [ 'https://www.redhat.com/mailman/listinfo/func-list', '' ]
+    kickstart-list: [ 'https://www.redhat.com/mailman/listinfo/kickstart-list', '' ]
+    rhn-users: [ 'https://www.redhat.com/mailman/listinfo/rhn-users', '' ]
+    spacewalk-devel: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-devel', '']
+    spacewalk-list: [ 'https://www.redhat.com/mailman/listinfo/spacewalk-list', '' ]
 limit_months:
     12
 track_limit: 0.01

@@ -61,6 +61,7 @@ class Grapher
 
         # puts months
 
+        last = 0
         months.each { |month|
             puts "this month: #{month}"
 
@@ -89,9 +90,11 @@ class Grapher
             outside_ttl   = outside_ttl + outside_ct
             total_ttl     = total_ttl   + month_ct
 
+            last = month_ct
+
         }
         dataset = [ total_data, inside_data, outside_data ]
-        return total_ttl, inside_ttl, outside_ttl, dataset
+        return total_ttl, inside_ttl, outside_ttl, dataset, last
 
     end
 
@@ -313,7 +316,7 @@ class Grapher
 
          # generate a graph cell showing the activity over time for a mailing list, month by month
 
-         total_ct, inside_ct, outside_ct, dataset = compute_time_dataset(list,months)
+         total_ct, inside_ct, outside_ct, dataset, last_ct = compute_time_dataset(list,months)
 
          # HACK -- print list, inside, outside, total for grepping
          # 
@@ -325,16 +328,29 @@ class Grapher
          puts "dashoutside #{outside_ct}"
          puts "dashtotal #{total_ct}"
 
+         avg = total_ct / months.length()
+
          month_chart = Gchart.line(
              :title => '', 
              :data => dataset,
-             :legend => ["total (#{total_ct})","inside (#{inside_ct})","outside (#{outside_ct})"],
+             :legend => ["combined (total=#{total_ct}, avg=#{avg}, last=#{last_ct})","inside (#{inside_ct})","outside (#{outside_ct})"],
              :size => '400x300',
              :line_colors => [ "000000", "ff0000", "0000ff" ],
              :axis_labels => months   
          )
  
-         return "<TD><IMG SRC='#{month_chart}'/></TD>"
+         base = "<TD><IMG SRC='#{month_chart}'/>"
+
+         perc = ((avg - last_ct + 0.0).abs() / (avg + 0.0)) * 100
+         perc = perc.to_i()
+
+         if avg > last_ct
+            base = base + "<br/>DECREASED #{perc}% posts vs average"
+         else
+            base = base + "<br/>INCREASED #{perc}% posts vs average"
+         end
+
+         return base + "</TD>"
 
     end
 
@@ -358,8 +374,21 @@ class Grapher
              else
                  colors << @data['colors'][domain]
              end
+             sum = 0
+             nonzero = 0
+             values.each { |x|
+                sum = sum + x
+                if x !=0
+                   nonzero = nonzero + 1
+                end
+             }
              last = values[-1]
-             legends << "#{domain} (last=#{last})" # FIXME: include total count here
+             if nonzero != 0
+                 avg = sum / nonzero
+             else
+                 avg = "?"
+             end
+             legends << "#{domain} (total=#{sum}, avg=#{avg}, last=#{last})" # FIXME: include total count here
          end
 
          month_chart = Gchart.line(
@@ -372,26 +401,6 @@ class Grapher
          )
  
          return "<TD><IMG SRC='#{month_chart}'/></TD>"
-
-    end
-
-
-    # ===================================================================
-
-    def get_stats_cell(buckets)
-
-         # generate a text cell showing the total post counts for each domain
-
-         buf = "<TD><TABLE>"
-         total = 0           
-         buckets.sort{|a,b| b[1]<=>a[1]}.each do |key,value|
-             unless key == "other" and value == 0
-                 buf = buf + "<TR><TD>#{key}</TD><TD>#{value.to_i}</TD></TR>\n"
-                 total = total + value
-             end
-         end
-         buf = buf + "<TR><TD>total</TD><TD>#{total.to_i}</TD></TR></TABLE></TD>\n"
-         return buf
 
     end
 
