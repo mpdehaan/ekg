@@ -57,12 +57,12 @@ class Scanner
              raise "unknown mailman type: #{list_type}"
          end
          puts "list #{list_count}/#{lists_size}"
-         scan_archives(list,list_url,list_count,lists_size,hits)
+         scan_archives(list,list_url,list_count,lists_size,hits,list_type)
          list_count = list_count + 1
       }
    end
 
-   def scan_archives(list,url,list_count,lists_size,hits)
+   def scan_archives(list,url,list_count,lists_size,hits,list_type)
       # read a mailing archives page to find the threads listed on that page
       mon_count = 1
       puts "#{list} archives page is: #{url}"
@@ -85,7 +85,7 @@ class Scanner
              end
 
              if (mon_count == 1) || (scan_this)
-                 scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count,hits)
+                 scan_threads(list,"#{url}/#{new_url}",list_count,lists_size,mon_count,hits,list_type)
              end
 
              # flag that we are done scanning the month if this month is not THIS month
@@ -104,7 +104,7 @@ class Scanner
 
    end
 
-   def scan_threads(list,url,list_count,lists_size,mon_count,hits)
+   def scan_threads(list,url,list_count,lists_size,mon_count,hits,list_type)
       # read a given month's archives page to find the messages within
     
       count = 0
@@ -134,7 +134,7 @@ class Scanner
                          puts "#{list} (list #{list_count}/#{lists_size} month #{mon_count}/#{@limit_months}) post #{count}"
                       end
                       # puts "here is a thread URL: #{link.inner_html}"
-                      scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count)
+                      scan_message(link.inner_html,list,new_url,list_count,lists_size,mon_count,count,list_type)
                   end
               end
           end
@@ -142,7 +142,7 @@ class Scanner
 
    end
 
-   def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count)
+   def scan_message(subject,list,msg_url,list_count, lists_size,mon_count,count,list_type)
       # puts msg_url
       begin
           doc = Hpricot(URI.parse(msg_url).read())
@@ -172,7 +172,7 @@ class Scanner
          }
       end
 
-      if from_domain.nil?
+      if from_domain.nil? and list_type != "pipermail"
           # puts "looking for domain"
           doc.search("link") { |link| 
               # FIXME: @redhat.com specific
@@ -191,9 +191,11 @@ class Scanner
           doc.search("a") { |link|
               if link.attributes["HREF"] =~ /lists\.fedorahosted\.org/
                   tokens = link.inner_html.split(" at ")
-                  if tokens.length == 3 and tokens[1] == "at"
-                     from_addr = "#{tokens[0]}@#{tokens[2]}"
-                     from_domain = tokens[2] 
+                  if tokens.length == 2
+                     tokens[0] = tokens[0].strip()
+                     tokens[1] = tokens[1].strip()
+                     from_addr = "#{tokens[0]}@#{tokens[1]}"
+                     from_domain = tokens[1]
                      break
                   end
               end 
